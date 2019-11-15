@@ -1,5 +1,3 @@
-TODO: Add matcher docs
-
 # Advanced-Event-Tracking
 Flexible &amp; Advanced Event Tracking for SiteSpect
 
@@ -79,6 +77,38 @@ _stsp.push({
 ```
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`
+
+## Matching
+Using matching it's possible to filter when an event should be sent. You can use the cookie, and from the document.locaiton object you can use hostname, pathname, href, hash & search.
+
+```javascript
+var _stsp = _stsp || [];
+_stsp.push({
+	'selector':'h2',
+	'event':'header2Click',
+	'match': {
+		hostname: '\.(nl|be)$'
+	}
+});
+```
+
+When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`, but only when the current hostname matches the regular expression
+
+## Filtering
+You can provide an optional callback to filter events. When this function return true, the event will be sent.
+
+```javascript
+var _stsp = _stsp || [];
+_stsp.push({
+	'selector':'h3',
+	'event':'header3-Click',
+	'filter': function(element){
+		return Math.floor(Math.random() * 100) > 50;
+	}
+});
+```
+
+When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`, but only in 50% of the cases, since the function is using a random method.
 
 ## Direct Send
 For convencience, we have added a method to immediately send an event. Filters are not allowed here.
