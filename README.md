@@ -8,7 +8,8 @@ This functionality can be used to simple add event tracking to an experiment.
 In order to add click tracking to specific elements on the page, you can use the following javascript, which should be added right before the closing body tag (</body>).
 
 ```javascript
-stspTracker.push({
+var _stsp = _stsp || [];
+_stsp.push({
 	'selector':'button.btn--primary',
 	'event':'clickOnMainCTA'
 });
@@ -21,7 +22,8 @@ When the element is clicked, a request will be made to: `/__ssobj/track?event=cl
 If there are multiple elements that match the selector, you can enable enumeration to identify the elements sequence, as follows:
 
 ```javascript
-stspTracker.push({
+var _stsp = _stsp || [];
+_stsp.push({
 	'selector':'h2',
 	'event':'header2Click',
 	'enumerate': true
@@ -35,7 +37,8 @@ When the element is clicked, a request will be made to: `/__ssobj/track?event=he
 You can simply add multiple attributes by simply adding them as follows:
 
 ```javascript
-stspTracker.push({
+var _stsp = _stsp || [];
+_stsp.push({
 	'selector':'h2',
 	'event':'header2Click',
 	'some-attribute': 'some-value'
@@ -50,7 +53,8 @@ It is possible to use dynamic values in these attributes, in two ways:
 By referencing a variable
 
 ```javascript
-stspTracker.push({
+var _stsp = _stsp || [];
+_stsp.push({
 	'selector':'h2',
 	'event':'header2Click',
 	'domain': document.location.hostname
@@ -62,7 +66,8 @@ When the element is clicked, a request will be made to: `/__ssobj/track?domain=w
 Or by adding a callback function
 
 ```javascript
-stspTracker.push({
+var _stsp = _stsp || [];
+_stsp.push({
 	'selector':'h2',
 	'event':'header2Click',
 	'test': function(element){
@@ -77,7 +82,8 @@ When the element is clicked, a request will be made to: `/__ssobj/track?event=he
 For convencience, we have added a method to immediately send an event. Filters are not allowed here.
 
 ```javascript
-stspTracker.push({
+var _stsp = _stsp || [];
+_stsp.push({
 	'event':'sendImmediatly'
 });
 

@@ -4,7 +4,7 @@
 /*                                                                         */
 /* Inject this code right before the </head> using a global variation.     */
 /*                                                                         */
-var stspTracker = stspTracker || [];
+var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
 	enumerate : function(selector) {
@@ -49,7 +49,7 @@ window.SS.Tracking = {
 		document.addEventListener('click',function(event){
 			if(!event.target) return;
 			
-			stspTracker.filter(function(item){
+			_stsp.filter(function(item){
 				return !! item.selector && event.target.matches(item.selector+','+item.selector+' *');
 			}).forEach(function(item){
 				if(!item.event) return;
@@ -64,7 +64,7 @@ window.SS.Tracking = {
 				}
 			});
 		});
-		stspTracker.push = function(data) {
+		_stsp.push = function(data) {
 			if(data.enumerate) {
 				window.SS.Tracking.enumerate(data.selector);
 			}
