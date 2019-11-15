@@ -13,8 +13,8 @@ window.SS.Tracking = {
 		})
 	},
 	send: function(item,element) {
-		var trackingUrl = '/__ssobj/track?' + Object.entries(item).filter(function([k,v]){
-			var skipAttributes = new Set(['selector','filter', 'match']);
+		var attributes = Object.entries(item).filter(function([k,v]){
+			var skipAttributes = new Set(['selector','filter', 'match','event']);
 			return !skipAttributes.has(k);
 		}).map(function([k,v]){
 			if(k=='enumerate') {
@@ -24,7 +24,9 @@ window.SS.Tracking = {
 				return k + '=' + v(element);
 			}
 			return k + '=' + v
-		}).sort().join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+		}).sort();
+		
+		var trackingUrl = '/__ssobj/track?event=' + item.event + '&' + attributes.join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
 		
 		try {
 			var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
@@ -34,10 +36,15 @@ window.SS.Tracking = {
 				xhr.onreadystatechange = function(a,b,c){
 					if(xhr.readyState == xhr.HEADERS_RECEIVED) {
 						if(xhr.getResponseHeader("SiteSpect-Metrics-Info")) {
-						function ssApplyEventTrackMetric(req, obj) {
+							var data = 	xhr.getResponseHeader("SiteSpect-Metrics-Info");
+							console.log(data);
+							data = data.replace(/("Name":"[^"]+)/i,'\$1 <br/>'+attributes.join(', '));
+							data = data.replace(/^{"[0-9]+"/i,'{"'+Math.floor(Math.random() * 9999999999)+'"');
+							console.log(data);
+							function ssApplyEventTrackMetric(req, obj) {
 								if ( document.querySelector('.dx-pane--diagnostics .dx-pane--dx-table') ) {
 									__preview_history.add_event_track_metric(
-										req.getResponseHeader("SiteSpect-Metrics-Info"),
+										data,
 										'Metric (EventTrack)'
 									);
 								} else {
