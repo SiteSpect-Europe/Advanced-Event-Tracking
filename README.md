@@ -14,7 +14,7 @@ stspTracker.push({
 });
 ```
 
-When the element is clicked, a request will be made to: /__ssobj/track?event=clickOnMainCTA
+When the element is clicked, a request will be made to: `/__ssobj/track?event=clickOnMainCTA`
 
 
 ## Enumeration
@@ -28,7 +28,7 @@ stspTracker.push({
 });
 ```
 
-When the element is clicked, a request will be made to: /__ssobj/track?event=header2Click&sequence=1
+When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&sequence=1`
 
 
 # Additional attributes
@@ -42,7 +42,7 @@ stspTracker.push({
 });
 ```
 
-When the element is clicked, a request will be made to: /__ssobj/track?event=header2Click&some-attribute=some-value
+When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&some-attribute=some-value`
 
 # Dynamic Attributes
 It is possible to use dynamic values in these attributes, in two ways:
@@ -57,7 +57,7 @@ stspTracker.push({
 });
 ```
 
-When the element is clicked, a request will be made to: /__ssobj/track?domain=www.drivek.it&event=header2Click&
+When the element is clicked, a request will be made to: `/__ssobj/track?domain=www.drivek.it&event=header2Click`
 
 Or by adding a callback function
 
@@ -71,7 +71,7 @@ stspTracker.push({
 });
 ```
 
-When the element is clicked, a request will be made to: /__ssobj/track?event=header2Click&test=34141182
+When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`
 
 ## Direct Send
 For convencience, we have added a method to immediately send an event. Filters are not allowed here.
@@ -81,5 +81,5 @@ stspTracker.push({
 	'event':'sendImmediatly'
 });
 
-When the element is clicked, a request will be made to: /__ssobj/track?event=sendImmediatly
+When the element is clicked, a request will be made to: `/__ssobj/track?event=sendImmediatly`
 
