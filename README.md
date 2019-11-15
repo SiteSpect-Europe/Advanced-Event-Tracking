@@ -24,7 +24,7 @@ If there are multiple elements that match the selector, you can enable enumerati
 stspTracker.push({
 	'selector':'h2',
 	'event':'header2Click',
-	enumerate: true
+	'enumerate': true
 });
 ```
 
