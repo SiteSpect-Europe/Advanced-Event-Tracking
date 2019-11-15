@@ -17,23 +17,7 @@ _stsp.push({
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=clickOnMainCTA`
 
-
-## Enumeration
-If there are multiple elements that match the selector, you can enable enumeration to identify the elements sequence, as follows:
-
-```javascript
-var _stsp = _stsp || [];
-_stsp.push({
-	'selector':'h2',
-	'event':'header2Click',
-	'enumerate': true
-});
-```
-
-When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&sequence=1`
-
-
-# Additional attributes
+## Additional attributes
 You can simply add multiple attributes by simply adding them as follows:
 
 ```javascript
@@ -47,7 +31,7 @@ _stsp.push({
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&some-attribute=some-value`
 
-# Dynamic Attributes
+## Dynamic Attributes
 It is possible to use dynamic values in these attributes, in two ways:
 
 By referencing a variable
@@ -77,6 +61,20 @@ _stsp.push({
 ```
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`
+
+## Enumeration
+If there are multiple elements that match the selector, you can enable enumeration to identify the elements sequence, as follows:
+
+```javascript
+var _stsp = _stsp || [];
+_stsp.push({
+	'selector':'h2',
+	'event':'header2Click',
+	'enumerate': true
+});
+```
+
+When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&sequence=1`
 
 ## Matching
 Using matching it's possible to filter when an event should be sent. You can use the cookie, and from the document.locaiton object you can use hostname, pathname, href, hash & search.
