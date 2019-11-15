@@ -93,7 +93,7 @@ _stsp.push({
 When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`, but only when the current hostname matches the regular expression
 
 ## Filtering
-You can provide an optional callback to filter events. When this function return true, the event will be sent.
+You can provide an optional callback to filter events. When this function returns true, the event will be sent.
 
 ```javascript
 var _stsp = _stsp || [];
@@ -101,7 +101,7 @@ _stsp.push({
 	'selector':'h3',
 	'event':'header3-Click',
 	'filter': function(element){
-		return Math.floor(Math.random() * 100) > 50;
+		return Math.random() > .5;
 	}
 });
 ```
