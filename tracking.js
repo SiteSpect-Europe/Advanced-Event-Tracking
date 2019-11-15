@@ -12,9 +12,9 @@ window.SS.Tracking = {
 			el.setAttribute('stsp-sequence',idx+1);
 		})
 	},
-	send(item,element) {
+	send: function(item,element) {
 		var trackingUrl = '/__ssobj/track?' + Object.entries(item).filter(function([k,v]){
-			var skipAttributes = new Set(['selector','filter']);
+			var skipAttributes = new Set(['selector','filter', 'match']);
 			return !skipAttributes.has(k);
 		}).map(function([k,v]){
 			if(k=='enumerate') {
@@ -39,11 +39,30 @@ window.SS.Tracking = {
 			return false; 
 		}
 		try {
+			if(!!window.SS.Tracking.debug)
+				console.log(trackingUrl);
 			xhr.send(null)
 		} catch (e) {
 			if (e.number & 1) return false;
 		}
 		return true;
+	},
+	matcher: function(criteria) {
+		return !Object.entries(criteria).filter(function([prop,val]){
+			switch(prop) {
+				case 'hostname':
+				case 'pathname':
+				case 'href':
+				case 'host':
+				case 'hash':
+				case 'search':
+					return !(new RegExp(val)).test(document.location[prop]);
+					break;
+				case 'cookie':
+					return !(new RegExp(val)).test(document.cookie);
+					break;
+			}
+		}).length;
 	},
 	setup : function() {
 		document.addEventListener('click',function(event){
@@ -54,12 +73,10 @@ window.SS.Tracking = {
 			}).forEach(function(item){
 				if(!item.event) return;
 				var element = event.target.closest(item.selector);
-		
 				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
 					window.SS.Tracking.enumerate(item.selector);
 				}
-				
-				if(!item.filter || item.filter(element)) {
+				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
 					window.SS.Tracking.send(item,element);
 				}
 			});
