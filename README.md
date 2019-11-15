@@ -3,7 +3,7 @@ Flexible &amp; Advanced Event Tracking for SiteSpect
 
 This functionality can be used to simple add event tracking to an experiment.
 
-## Basic Usage:
+## Basic Usage
 
 In order to add click tracking to specific elements on the page, you can use the following javascript, which should be added right before the closing body tag (</body>).
 
