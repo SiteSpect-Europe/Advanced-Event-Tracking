@@ -114,9 +114,9 @@ For convencience, we have added a method to immediately send an event. Filters a
 ```javascript
 var _stsp = _stsp || [];
 _stsp.push({
-	'event':'sendImmediatly'
+	'event':'sendImmediately'
 });
 ```
 
-When the element is clicked, a request will be made to: `/__ssobj/track?event=sendImmediatly`
+When the element is clicked, a request will be made to: `/__ssobj/track?event=sendImmediately`
 
