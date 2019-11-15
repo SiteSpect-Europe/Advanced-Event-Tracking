@@ -1,4 +1,4 @@
-/* Copyright 2019, SiteSpect, Europe. All Rights Reserved.                 */
+/* Copyright 2019, SiteSpect Europe. All Rights Reserved.                  */
 /*                                                                         */
 /* Author: Erwin Kerk <ekerk@sitespect.com>                                */
 /*                                                                         */
