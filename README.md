@@ -116,6 +116,7 @@ var _stsp = _stsp || [];
 _stsp.push({
 	'event':'sendImmediatly'
 });
+```
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=sendImmediatly`
 
