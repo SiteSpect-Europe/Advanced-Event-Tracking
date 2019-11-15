@@ -12,10 +12,23 @@ window.SS.Tracking = {
 			el.setAttribute('stsp-sequence',idx+1);
 		})
 	},
-	send(url) {
+	send(item,element) {
+		var trackingUrl = '/__ssobj/track?' + Object.entries(item).filter(function([k,v]){
+			var skipAttributes = new Set(['selector','filter']);
+			return !skipAttributes.has(k);
+		}).map(function([k,v]){
+			if(k=='enumerate') {
+				return 'sequence='+element.getAttribute('stsp-sequence');
+			}
+			if(typeof v == 'function') {
+				return k + '=' + v(element);
+			}
+			return k + '=' + v
+		}).sort().join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+		
 		try {
 			var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
-			xhr.open('GET', url);
+			xhr.open('GET', trackingUrl);
 		} catch(e) { 
 			return false; 
 		}
@@ -45,28 +58,18 @@ window.SS.Tracking = {
 				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
 					window.SS.Tracking.enumerate(item.selector);
 				}
-		
-				var trackingUrl = '/__ssobj/track?' + Object.entries(item).filter(function([k,v]){
-					var skipAttributes = new Set(['selector','filter']);
-					return !skipAttributes.has(k);
-				}).map(function([k,v]){
-					if(k=='enumerate') {
-						return 'sequence='+element.getAttribute('stsp-sequence');
-					}
-					if(typeof v == 'function') {
-						return k + '=' + v(element);
-					}
-					return k + '=' + v
-				}).sort().join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+				
 				if(!item.filter || item.filter(element)) {
-					window.SS.Tracking.send(trackingUrl);
+					window.SS.Tracking.send(item,element);
 				}
 			});
 		});
-
 		stspTracker.push = function(data) {
 			if(data.enumerate) {
 				window.SS.Tracking.enumerate(data.selector);
+			}
+			if(!data.selector) {
+				window.SS.Tracking.send(data,null);				
 			}
 			Array.prototype.push.call(this,data);
 		}
