@@ -29,6 +29,30 @@ window.SS.Tracking = {
 		try {
 			var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
 			xhr.open('GET', trackingUrl);
+			
+			if(!!window.ssp_current_data) {
+				xhr.onreadystatechange = function(a,b,c){
+					if(xhr.readyState == xhr.HEADERS_RECEIVED) {
+						if(xhr.getResponseHeader("SiteSpect-Metrics-Info")) {
+						function ssApplyEventTrackMetric(req, obj) {
+								if ( document.querySelector('.dx-pane--diagnostics .dx-pane--dx-table') ) {
+									__preview_history.add_event_track_metric(
+										req.getResponseHeader("SiteSpect-Metrics-Info"),
+										'Metric (EventTrack)'
+									);
+								} else {
+									setTimeout(
+										function() {
+											ssApplyEventTrackMetric(req, obj);
+										},100
+									);
+								}
+							}
+							ssApplyEventTrackMetric(xhr, xhr);
+						}
+					}
+				}
+			}
 		} catch(e) { 
 			return false; 
 		}
@@ -38,10 +62,13 @@ window.SS.Tracking = {
 		} catch(e) { 
 			return false; 
 		}
+		
 		try {
-			if(!!window.SS.Tracking.debug)
+			if(!!window.SS.Tracking.debug || !!window.ssp_current_data)
 				console.log(trackingUrl);
-			xhr.send(null)
+			
+		
+			xhr.send(null);
 		} catch (e) {
 			if (e.number & 1) return false;
 		}
