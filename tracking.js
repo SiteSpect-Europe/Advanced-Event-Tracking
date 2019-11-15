@@ -37,10 +37,8 @@ window.SS.Tracking = {
 					if(xhr.readyState == xhr.HEADERS_RECEIVED) {
 						if(xhr.getResponseHeader("SiteSpect-Metrics-Info")) {
 							var data = 	xhr.getResponseHeader("SiteSpect-Metrics-Info");
-							console.log(data);
 							data = data.replace(/("Name":"[^"]+)/i,'\$1 <br/>'+attributes.join(', '));
 							data = data.replace(/^{"[0-9]+"/i,'{"'+Math.floor(Math.random() * 9999999999)+'"');
-							console.log(data);
 							function ssApplyEventTrackMetric(req, obj) {
 								if ( document.querySelector('.dx-pane--diagnostics .dx-pane--dx-table') ) {
 									__preview_history.add_event_track_metric(
