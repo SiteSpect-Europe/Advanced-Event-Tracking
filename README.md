@@ -9,7 +9,7 @@ In order to add click tracking to specific elements on the page, you can use the
 
 ```javascript
 stspTracker.push({
-	'selector':'button.lead-form__submit.btn--primary',
+	'selector':'button.btn--primary',
 	'event':'clickOnMainCTA'
 });
 ```
@@ -73,4 +73,13 @@ stspTracker.push({
 
 When the element is clicked, a request will be made to: /__ssobj/track?event=header2Click&test=34141182
 
+## Direct Send
+For convencience, we have added a method to immediately send an event. Filters are not allowed here.
+
+```javascript
+stspTracker.push({
+	'event':'sendImmediatly'
+});
+
+When the element is clicked, a request will be made to: /__ssobj/track?event=sendImmediatly
 
