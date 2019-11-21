@@ -99,7 +99,6 @@ window.SS.Tracking = {
 	setup : function() {
 		document.addEventListener('click',function(event){
 			if(!event.target) return;
-			
 			_stsp.filter(function(item){
 				return !! item.selector && event.target.matches(item.selector+','+item.selector+' *');
 			}).forEach(function(item){
