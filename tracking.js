@@ -43,7 +43,7 @@ window.SS.Tracking = {
 							var metrics = JSON.parse(data);
 							var newmetrics = {};
 							for(id in metrics) {
-								newid = id + '' + window.SS.Tracking.hash(attributes.join('&'));
+								newid = id + '-' + window.SS.Tracking.hash(attributes.join('&'));
 								newmetrics[newid]={};
 								Object.assign(newmetrics[newid],metrics[id]);
 								newmetrics[newid].ID=newid;
@@ -51,7 +51,7 @@ window.SS.Tracking = {
 									newmetrics[newid].Name += '<br/>AET: '+attributes.join(', '); 
 							}
 							data = JSON.stringify(newmetrics);
-														function ssApplyEventTrackMetric(req, obj) {
+							function ssApplyEventTrackMetric(req, obj) {
 								if ( document.querySelector('.dx-pane--diagnostics .dx-pane--dx-table') ) {
 									__preview_history.add_event_track_metric(
 										data,
