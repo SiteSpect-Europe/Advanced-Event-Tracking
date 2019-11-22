@@ -25,8 +25,8 @@ window.SS.Tracking = {
 			}
 			return k + '=' + v
 		}).sort();
-		
-		var trackingUrl = '/__ssobj/track?event=' + item.event + '&' + attributes.join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+		attributes.push('x=' + Math.floor(Math.random() * 99999999) + '-1');
+		var trackingUrl = '/__ssobj/track?event=' + item.event + '&' + attributes.join('&')
 		
 		try {
 			var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
