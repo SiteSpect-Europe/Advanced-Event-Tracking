@@ -12,6 +12,9 @@ window.SS.Tracking = {
 			el.setAttribute('stsp-sequence',idx+1);
 		})
 	},
+	hash :function(s){
+	  return Math.abs(s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)*1);              
+	},
 	send: function(item,element) {
 		var attributes = Object.entries(item).filter(function([k,v]){
 			var skipAttributes = new Set(['selector','filter', 'match','event']);
@@ -37,9 +40,18 @@ window.SS.Tracking = {
 					if(xhr.readyState == xhr.HEADERS_RECEIVED) {
 						if(xhr.getResponseHeader("SiteSpect-Metrics-Info")) {
 							var data = 	xhr.getResponseHeader("SiteSpect-Metrics-Info");
-							data = data.replace(/("Name":"[^"]+)/i,'\$1 <br/>AET: '+attributes.join(', '));
-							data = data.replace(/^{"[0-9]+"/i,'{"'+Math.floor(Math.random() * 9999999999)+'"');
-							function ssApplyEventTrackMetric(req, obj) {
+							var metrics = JSON.parse(data);
+							var newmetrics = {};
+							for(id in metrics) {
+								newid = id + '' + window.SS.Tracking.hash(attributes.join('&'));
+								newmetrics[newid]={};
+								Object.assign(newmetrics[newid],metrics[id]);
+								newmetrics[newid].ID=newid;
+								if(attributes.length)
+									newmetrics[newid].Name += '<br/>AET: '+attributes.join(', '); 
+							}
+							data = JSON.stringify(newmetrics);
+														function ssApplyEventTrackMetric(req, obj) {
 								if ( document.querySelector('.dx-pane--diagnostics .dx-pane--dx-table') ) {
 									__preview_history.add_event_track_metric(
 										data,
