@@ -39,7 +39,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback'].indexOf(_key) > -1){
 				continue;
 			}
 
@@ -152,6 +152,9 @@ window.SS.Tracking = {
 				}
 				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
 					window.SS.Tracking.send(item,element);
+					if(item.callback) {
+						item.callback(data);
+					}
 				}
 			}
 		});
@@ -159,8 +162,11 @@ window.SS.Tracking = {
 			if(data.enumerate) {
 				window.SS.Tracking.enumerate(data.selector);
 			}
-			if(!data.selector && (!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
-				window.SS.Tracking.send(data,null);				
+			if(!data.selector && (!data.filter || data.filter(element)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
+				window.SS.Tracking.send(data,null);
+				if(data.callback) {
+					data.callback(data);
+				}				
 			}
 			Array.prototype.push.call(this,data);
 		}
