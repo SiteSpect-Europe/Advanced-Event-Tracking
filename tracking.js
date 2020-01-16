@@ -1,10 +1,11 @@
 /* Copyright 2020, SiteSpect Europe. All Rights Reserved.                  */
 /*                                                                         */
-/* Author: Erwin Kerk <ekerk@sitespect.com>                                */
+/* Authors: Erwin Kerk <ekerk@sitespect.com>                               */
+/*          Jonas van Ineveld <jvanineveld@sitespect.com>                  */
 /*                                                                         */
 /* Inject this code right before the </head> using a global variation.     */
 /*                                                                         */
-/*                           Version 1.0.1                                 */
+/*                           Version 1.0.2                                 */
 
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
@@ -158,7 +159,7 @@ window.SS.Tracking = {
 			if(data.enumerate) {
 				window.SS.Tracking.enumerate(data.selector);
 			}
-			if(!data.selector) {
+			if(!data.selector && (!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
 				window.SS.Tracking.send(data,null);				
 			}
 			Array.prototype.push.call(this,data);
