@@ -4,6 +4,8 @@
 /*                                                                         */
 /* Inject this code right before the </head> using a global variation.     */
 /*                                                                         */
+/*                           Version 1.0.1                                 */
+
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
@@ -13,21 +15,45 @@ window.SS.Tracking = {
 		})
 	},
 	hash :function(s){
-	  return Math.abs(s.split("").reduce(function(a,b){a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)*1);              
+		var a = 1, c = 0, h, o;
+		if (s) {
+			a = 0;
+			/*jshint plusplus:false bitwise:false*/
+			for (h = s.length - 1; h >= 0; h--) {
+				o = s.charCodeAt(h);
+				a = (a<<6&268435455) + o + (o<<14);
+				c = a & 266338304;
+				a = c!==0?a^c>>21:a;
+			}
+		}
+		return String(a);
 	},
 	send: function(item,element) {
-		var attributes = Object.entries(item).filter(function([k,v]){
-			var skipAttributes = new Set(['selector','filter', 'match','event']);
-			return !skipAttributes.has(k);
-		}).map(function([k,v]){
-			if(k=='enumerate') {
-				return 'sequence='+element.getAttribute('stsp-sequence');
+		var attributes = [],
+			itemAttrs = Object.entries(item);
+
+		for(var i =0; i<itemAttrs.length; i++){
+			var attr = itemAttrs[i],
+				_key = attr[0],
+				_val = attr[1],
+				attrStr = '';
+
+			if(['selector','filter', 'match','event'].indexOf(_key) > -1){
+				continue;
 			}
-			if(typeof v == 'function') {
-				return k + '=' + v(element);
+
+			if(_key=='enumerate') {
+				attrStr = 'sequence='+element.getAttribute('stsp-sequence');
+			} else if(typeof _val == 'function') {
+				attrStr = _key + '=' + _val(element);
+			} else {
+				attrStr = _key + '=' + element;
 			}
-			return k + '=' + v
-		}).sort();
+
+			attributes.push(attrStr)
+		}
+
+		attributes.sort();
 		
 		var trackingUrl = '/__ssobj/track?event=' + item.event + '&' + attributes.join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
 		
@@ -83,7 +109,6 @@ window.SS.Tracking = {
 		try {
 			if(!!window.SS.Tracking.debug || !!window.ssp_current_data)
 				console.log(trackingUrl);
-			
 		
 			xhr.send(null);
 		} catch (e) {
@@ -92,7 +117,10 @@ window.SS.Tracking = {
 		return true;
 	},
 	matcher: function(criteria) {
-		return !Object.entries(criteria).filter(function([prop,val]){
+		return !Object.entries(criteria).filter(function(arr){
+			var prop = arr[0],
+				val = arr[1];
+
 			switch(prop) {
 				case 'hostname':
 				case 'pathname':
@@ -101,21 +129,22 @@ window.SS.Tracking = {
 				case 'hash':
 				case 'search':
 					return !(new RegExp(val)).test(document.location[prop]);
-					break;
 				case 'cookie':
 					return !(new RegExp(val)).test(document.cookie);
-					break;
 			}
 		}).length;
 	},
 	setup : function() {
 		document.addEventListener('click',function(event){
 			if(!event.target) return;
-			
-			_stsp.filter(function(item){
-				return !! item.selector && event.target.matches(item.selector+','+item.selector+' *');
-			}).forEach(function(item){
-				if(!item.event) return;
+
+			for(var i=0; i<_stsp.length; i++){
+				var item = _stsp[i];
+
+				if(!item.event || !item.selector || !event.target.matches(item.selector+','+item.selector+' *')){
+					continue;
+				}
+				
 				var element = event.target.closest(item.selector);
 				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
 					window.SS.Tracking.enumerate(item.selector);
@@ -123,7 +152,7 @@ window.SS.Tracking = {
 				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
 					window.SS.Tracking.send(item,element);
 				}
-			});
+			}
 		});
 		_stsp.push = function(data) {
 			if(data.enumerate) {
@@ -136,4 +165,64 @@ window.SS.Tracking = {
 		}
 	}
 }
+
+if (!Element.prototype.matches) {
+	Element.prototype.matches = Element.prototype.msMatchesSelector ||
+								Element.prototype.webkitMatchesSelector;
+}
+
+if (!Element.prototype.closest) {
+	Element.prototype.closest = function(s) {
+	var el = this;
+
+	do {
+		if (el.matches(s)) return el;
+		el = el.parentElement || el.parentNode;
+	} while (el !== null && el.nodeType === 1);
+		return null;
+	};
+}
+
+if (!Object.entries) {
+	Object.entries = function( obj ){
+		var ownProps = Object.keys( obj ),
+			i = ownProps.length,
+			resArray = new Array(i); // preallocate the Array
+		while (i--)
+			resArray[i] = [ownProps[i], obj[ownProps[i]]];
+		
+		return resArray;
+	};
+}
+
+if (typeof Object.assign !== 'function') {
+	// Must be writable: true, enumerable: false, configurable: true
+	Object.defineProperty(Object, "assign", {
+	  value: function assign(target, varArgs) { // .length of function is 2
+		'use strict';
+		if (target === null || target === undefined) {
+		  throw new TypeError('Cannot convert undefined or null to object');
+		}
+  
+		var to = Object(target);
+  
+		for (var index = 1; index < arguments.length; index++) {
+		  var nextSource = arguments[index];
+  
+		  if (nextSource !== null && nextSource !== undefined) { 
+			for (var nextKey in nextSource) {
+			  // Avoid bugs when hasOwnProperty is shadowed
+			  if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+				to[nextKey] = nextSource[nextKey];
+			  }
+			}
+		  }
+		}
+		return to;
+	  },
+	  writable: true,
+	  configurable: true
+	});
+}
+
 window.SS.Tracking.setup();
