@@ -114,6 +114,21 @@ _stsp.push({
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=header2Click&test=34141182`, but only in 50% of the cases, since the function is using a random method.
 
+## Callbacks
+
+You can provide an optional callback to execute after the event has been sent.
+
+```javascript
+var _stsp = _stsp || [];
+_stsp.push({
+    'selector':'h3',
+    'event':'header3-Click',
+    'callback': function(data){
+        console.log('Data Sent',data);
+    }
+});
+```
+
 ## Direct Send
 
 For convencience, we have added a method to immediately send an event. Filters are not allowed here.
