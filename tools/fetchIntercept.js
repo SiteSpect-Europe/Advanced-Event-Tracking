@@ -6,8 +6,6 @@
 		watchedUrls = []
 
 	window.fetch = function(url, request) {
-		// do something with the method, url and etc.
-		console.log('intercept got hit!', url)
 		ifActiveExecuteCallback(url);
 
 		return oldFetch.apply(this, arguments);

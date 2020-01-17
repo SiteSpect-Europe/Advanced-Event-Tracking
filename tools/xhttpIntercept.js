@@ -6,8 +6,6 @@
 		watchedUrls = []
 
 	window.XMLHttpRequest.prototype.open = function(method, url, async, user, password) {
-		// do something with the method, url and etc.
-		console.log('intercept got hit!', url)
 		this.addEventListener('load', function() {
 			ifActiveExecuteCallback(url);
 		});
