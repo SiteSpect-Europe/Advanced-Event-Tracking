@@ -48,7 +48,7 @@ window.SS.Tracking = {
 			} else if(typeof _val == 'function') {
 				attrStr = _key + '=' + _val(element);
 			} else {
-				attrStr = _key + '=' + element;
+				attrStr = _key + '=' + _val;
 			}
 
 			attributes.push(attrStr)
@@ -174,8 +174,18 @@ window.SS.Tracking = {
 }
 
 if (!Element.prototype.matches) {
-	Element.prototype.matches = Element.prototype.msMatchesSelector ||
-								Element.prototype.webkitMatchesSelector;
+	Element.prototype.matches = 
+	Element.prototype.matchesSelector || 
+	Element.prototype.mozMatchesSelector ||
+	Element.prototype.msMatchesSelector || 
+	Element.prototype.oMatchesSelector || 
+	Element.prototype.webkitMatchesSelector ||
+	function(s) {
+		var matches = (this.document || this.ownerDocument).querySelectorAll(s),
+			i = matches.length;
+		while (--i >= 0 && matches.item(i) !== this) {}
+		return i > -1;            
+	};
 }
 
 if (!Element.prototype.closest) {
