@@ -183,7 +183,8 @@
 		}
 
 		document.getElementById('init-test').addEventListener('click', function(){
-			document.getElementById('init-test').innerHTML = 'Testing..'
+			document.getElementById('init-test').innerHTML = '<span class="loader"></span> Testing..'
+			document.body.classList.remove('valid-test')
 			curTestResults = []
 			
 			setTimeout(() => {
@@ -228,8 +229,26 @@
 
 			padding-bottom: 180px;
 		}
+
 		*{
 			box-sizing: border-box;
+		}
+
+		.loader {
+			border: 3px solid #cecece;
+			border-top: 3px solid #4c5052;
+			border-radius: 50%;
+			width: 14px;
+			display: inline-block;
+			height: 14px;
+			vertical-align: middle;
+			animation: spin .5s linear infinite;
+			margin-right: 10px;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
 		}
 
 		.click{
