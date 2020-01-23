@@ -14,6 +14,9 @@
 	<div id="valid-test-result">
 		All checks have been succesfull
 	</div>
+	<div id="invalid-test-result">
+		There was a problem. Check the console for information
+	</div>
 	<div id="content" class="wrap">
 		<div class="simple-buttons">
 			<button id="simple_click">Send click event</button>
@@ -212,6 +215,12 @@
 		function showTestResult(isValid){
 			if(isValid){
 				document.body.classList.add('valid-test')
+			} else {
+				document.body.classList.add('error-test')
+				console.error('There was a problem validating the tests');
+				console.error('Was expecting:', JSON.parse(testResultShouldBe));
+				console.error('Results where:', curTestResults);
+
 			}
 		}
 
@@ -363,14 +372,24 @@
 			padding: 20px;
 		}
 
-		#valid-test-result{
+		#valid-test-result,
+		#invalid-test-result{
 			display: none;
 			padding: 10px 20px;
 			background: #5ba05b;
     		color: #dfd;
 		}
 
+		#invalid-test-result{
+			background: #af5b5b;
+    		color: #ffffff;
+		}
+
 		.valid-test #valid-test-result{
+			display: block;
+		}
+
+		.error-test #invalid-test-result{
 			display: block;
 		}
 
