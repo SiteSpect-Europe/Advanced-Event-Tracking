@@ -11,9 +11,10 @@ var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
 	enumerate : function(selector) {
-		document.querySelectorAll(selector).forEach(function(el,idx){
-			el.setAttribute('stsp-sequence',idx+1);
-		})
+		var nodes = document.querySelectorAll(selector);
+		for(var i=0; i<nodes.length; i++){
+			nodes[i].setAttribute('stsp-sequence',i+1);
+		}
 	},
 	hash :function(s){
 		var a = 1, c = 0, h, o;
