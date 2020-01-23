@@ -5,18 +5,22 @@
 	let oldFetch =  window.fetch,
 		watchedUrls = []
 
-	window.fetch = function(url, request) {
-		ifActiveExecuteCallback(url);
+	window.fetch = function(url, requestInfo) {
+		try {
+			ifActiveExecuteCallback(url, requestInfo);
+		} catch (error) {
+			console.log('error in fetch monkeypath', url, requestInfo, error)
+		}
 
 		return oldFetch.apply(this, arguments);
 	}
 
-	function ifActiveExecuteCallback(url){
+	function ifActiveExecuteCallback(url, requestInfo){
 		watchedUrls.forEach(config => {
 			const watchingForUrl = url.match(config.url);
 
 			if(watchingForUrl && config.callback){
-				config.callback();
+				config.callback(requestInfo);
 			}
 		})
 	}
@@ -27,6 +31,6 @@
 })()
 
 
-watchForFetchRequest('customer/basket/add', function(){
-	console.log('has been hit!')
+watchForFetchRequest('customer/basket/add', function(requestInfo){
+	console.log('has been hit!', requestInfo)
 })
