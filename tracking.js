@@ -10,7 +10,6 @@
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
-	debug: true,
 	enumerate : function(selector) {
 		var nodes = document.querySelectorAll(selector);
 		for(var i=0; i<nodes.length; i++){
