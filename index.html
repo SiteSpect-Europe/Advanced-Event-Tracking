@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Advanced event tracking - Testpage</title>
+</head>
+<body>
+	<header>
+		<h1>Advanced event tracking - Testpage</h1>
+		<button id="init-test">Init test run</button>
+	</header>
+	<div id="valid-test-result">
+		All checks have been succesfull
+	</div>
+	<div id="content" class="wrap">
+		<div class="simple-buttons">
+			<button id="simple_click">Send click event</button>
+			<button id="simple_click_attrs">Send click with attributes</button>
+			<button id="click_callback">Send click event, with callback</button>
+			<button id="click_function_attrs">Send click event, with function in attributes</button>
+		
+			<button id="click_function_match">Click event with matches</button>
+		
+			<a id="immediateFilterTest" href="#">immediateFilter</a>
+			<a id="immediateMatchesTest" href="#">immediateMatches</a>
+		</div>
+	
+		<div class="enum-tests">
+			<h2>Ennumerate test</h2>
+			<p>Clicking on item should trigger event with enumeration index</p>
+			<ul class="enum-list">
+				<li>USP #1</li>
+				<li>USP #2</li>
+				<li>USP #3</li>
+				<li>USP #4</li>
+			</ul>
+	
+			<h2>Filter test</h2>
+			<p>Only the click usps are triggers</p>
+			<ul class="filtered-enum-list">
+				<li>USP #1</li>
+				<li class="click">Click USP #2</li>
+				<li>USP #3</li>
+				<li class="click">Click USP #4</li>
+			</ul>
+		</div>
+
+		<div class="custom-field-test">
+			<h2>Send a custom event</h2>
+			<label>
+				<span>Event name</span>
+				<input type="text" id="custom-field-event-name" value="CustomEvent">
+			</label>
+			<label>
+				<span>Value</span>
+				<input type="text" id="custom-field-value" value="123-456">
+			</label>
+			<button id="custom_field_test">Send event</button>
+		</div>
+	</div>
+	
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="tracking.min.js"></script>
+	<script>
+		jQuery('<div id="event-log-wrap"><span>Event log</span><ul id="eventlog" /></div>').prependTo('body');
+		
+		window.SS.Tracking.debug = true;
+
+		var curTestResults = [];
+
+		let originalLog = console.log;
+
+		// monkeypatch console for debug info from script
+		console.log = function(path){
+			originalLog('testing!', ...arguments)
+			if(typeof path !== 'string'){
+				return
+			}
+			jQuery('<li>'+path+'</li>').prependTo('#eventlog')
+			curTestResults.push(path.replace(/&x=.*$/gm, ""))
+			jQuery('#eventlog')[0].scrollTop = 0;
+		}
+		
+		var _stsp = _stsp || [];
+		_stsp.push({
+			'selector':'#simple_click',
+			'event':'simpleClickEvent'
+		});
+
+		_stsp.push({
+			'selector':'#simple_click_attrs',
+			'event':'simpleClickEventWithAttributes',
+			'attr1': 'Some Value',
+			'attr2': 'Another Value',
+			'valNum': 121.41
+		});
+
+		_stsp.push({
+			'selector':'#click_callback',
+			'event':'clickWithCallBack',
+			'callback': function(data){
+				console.log(`Callback fired - ${JSON.stringify(data)}`)
+			}
+		});
+
+		_stsp.push({
+			'selector':'#custom_field_test',
+			'event': function(){
+				return document.getElementById('custom-field-event-name').value
+			},
+			'value': function(){
+				return document.getElementById('custom-field-value').value;
+			}
+		});
+
+		_stsp.push({
+			'selector':'.enum-list li',
+			'event':'USPListClick',
+			'enumerate': true
+		});
+
+		_stsp.push({
+			'selector':'.filtered-enum-list li',
+			'event':'USPFilteredListClick',
+			'enumerate': true,
+			'filter': function(el){
+				return el.className.includes('click')
+			}
+		});
+		
+		_stsp.push({
+			'selector':'#click_function_attrs',
+			'event':'clickWithFunctionAttrs',
+			'aRandomNumber': function(data){
+				return 100
+			}
+		});
+
+		_stsp.push({
+			'selector':'#click_function_match',
+			'event':'clickWithMatches',
+			'match': {
+				pathname: 'index.html'
+			}
+		});
+
+		_stsp.push({
+			'event':'sendImmediately'
+		});
+
+		document.getElementById('immediateFilterTest').addEventListener('click', function(){
+			_stsp.push({
+				'event':'sendImmediatelyWithFilter',
+				'filter': function(){
+					return document.location.pathname.indexOf('index.html') > -1
+				}
+			});
+		});
+
+		document.getElementById('immediateMatchesTest').addEventListener('click', function(){
+			_stsp.push({
+				'event':'sendImmediatelyWithMatches',
+				'match': {
+					'pathname': 'index.html'
+				}
+			});
+		})
+
+		const testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4"]'
+
+		function checkElements(nodes){
+			for(var i=0; i<nodes.length; i++){
+				var node = nodes[i];
+
+				if(i>0){
+					pauseInSync(200);
+				}
+
+				node.click();
+			}
+		}
+
+		document.getElementById('init-test').addEventListener('click', function(){
+			document.getElementById('init-test').innerHTML = 'Testing..'
+			curTestResults = []
+			
+			setTimeout(() => {
+				try {
+					var btns = document.querySelectorAll('#content button');
+
+					checkElements(btns);
+
+					var lis = document.querySelectorAll('#content .enum-tests li');
+
+					checkElements(lis);
+
+				} catch (error) {
+					console.error('Error while testing!', error)
+				}
+
+				document.getElementById('init-test').innerHTML = 'Retry'
+
+				const orgStr = JSON.stringify(curTestResults);
+
+				showTestResult(orgStr===testResultShouldBe)
+			}, 200)	
+		})
+
+		function showTestResult(isValid){
+			if(isValid){
+				document.body.classList.add('valid-test')
+			}
+		}
+
+		function pauseInSync(milliseconds) {
+			var dt = new Date();
+			while ((new Date()) - dt <= milliseconds) { /* Do nothing */ }
+		}
+
+	</script>
+
+	<style>
+		body{
+			margin: 0;
+			font: 400 14px arial;
+
+			padding-bottom: 180px;
+		}
+		*{
+			box-sizing: border-box;
+		}
+
+		.click{
+			font-weight: bold;
+		}
+
+		.wrap{
+			display: flex;
+		}
+		
+		.wrap > *{
+			margin: 20px;
+		}
+
+		#event-log-wrap{
+			position: fixed;
+			bottom: 30px;
+			left: 50%;
+			width: 90%;
+			margin-left:-45%;
+		}
+
+		#event-log-wrap > span{
+			position: absolute;
+			right: 10px;
+			top: 10px;
+			z-index: 100;
+			font-weight: bold;
+			margin-bottom: 3px;
+			display: block;
+			color: #fff;
+		}
+
+		#eventlog{
+			margin: 0;
+			background: #000;
+			color: #fff;
+			
+			list-style: none;
+			padding: 5px 10px;
+
+			max-height: 150px;
+			overflow: auto;
+
+			border: 4px solid #999;
+			
+		}
+
+		li + li {
+			margin-top: 10px;
+		}
+
+		.simple-buttons button + button,
+		.simple-buttons button + a,
+		.simple-buttons a + a{
+			margin-top: 5px;
+		}
+
+		.simple-buttons button, .simple-buttons a{
+			width: 100%;
+			text-align: left;
+		}
+
+		button, .simple-buttons a{
+			display: block;
+			background: none;
+			border: 2px solid #333;
+			white-space: nowrap;
+			padding: 5px 10px;
+
+			cursor: pointer;
+
+			color: #000;
+
+			text-decoration: none;
+
+			font: 400 12px arial;
+
+			outline: none;
+		}
+
+		button:hover, .simple-buttons a:hover{
+			background: #f2f2f2;
+		}
+
+		h2:first-child{
+			margin-top: 0;
+		}
+
+		.custom-field-test label{
+			display: block;
+			font-weight: bold;
+		}
+		
+		.custom-field-test label > span{
+			width: 100px;
+			display: inline-block;
+		}
+
+		.custom-field-test label + label
+		{
+			margin: 10px 0;
+		}
+
+		header{
+			background: #777;
+			color: #fff;
+			display: flex;
+
+			justify-content: space-between;
+
+			padding: 20px;
+		}
+
+		#valid-test-result{
+			display: none;
+			padding: 10px 20px;
+			background: #5ba05b;
+    		color: #dfd;
+		}
+
+		.valid-test #valid-test-result{
+			display: block;
+		}
+
+		header button{
+			background: #fff;
+		}
+
+		header button:hover{
+			background: #f2f2f2;
+		}
+
+		h1{
+			margin:0;
+		}
+	</style>
+</body>
+</html>
