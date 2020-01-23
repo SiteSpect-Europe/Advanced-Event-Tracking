@@ -10,6 +10,7 @@
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
+	debug: true,
 	enumerate : function(selector) {
 		var nodes = document.querySelectorAll(selector);
 		for(var i=0; i<nodes.length; i++){
@@ -137,7 +138,22 @@ window.SS.Tracking = {
 			}
 		}).length;
 	},
+	process : function(data){
+		if(data.enumerate) {
+			window.SS.Tracking.enumerate(data.selector);
+		}
+		if(!data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
+			window.SS.Tracking.send(data,null);
+			if(data.callback) {
+				data.callback(data);
+			}				
+		}
+	},
 	setup : function() {
+		for(var i=0; i<_stsp.length; i++){
+			window.SS.Tracking.process(_stsp[i]);
+		}
+
 		document.addEventListener('click',function(event){
 			if(!event.target) return;
 
@@ -160,16 +176,10 @@ window.SS.Tracking = {
 				}
 			}
 		});
+
 		_stsp.push = function(data) {
-			if(data.enumerate) {
-				window.SS.Tracking.enumerate(data.selector);
-			}
-			if(!data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
-				window.SS.Tracking.send(data,null);
-				if(data.callback) {
-					data.callback(data);
-				}				
-			}
+			window.SS.Tracking.process(data)
+
 			Array.prototype.push.call(this,data);
 		}
 	}
