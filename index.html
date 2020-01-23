@@ -126,7 +126,7 @@
 			'event':'USPFilteredListClick',
 			'enumerate': true,
 			'filter': function(el){
-				return el.className.includes('click')
+				return el.className.indexOf('click') > -1
 			}
 		});
 		
