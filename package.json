@@ -1,0 +1,28 @@
+{
+  "name": "advanced-event-tracking",
+  "version": "1.0.3",
+  "description": "Flexible &amp; Advanced Event Tracking for SiteSpect",
+  "main": "tracking.js",
+  "dependencies": {
+    "uglify-js": "^3.7.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "build": "uglifyjs --compress --mangle --output tracking.ugly.js -- tracking.js && node _/deploy.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SiteSpect-Europe/Advanced-Event-Tracking.git"
+  },
+  "author": "",
+  "contributors": [
+    "Erwin Kerk <ekerk@sitespect.com>",
+    "Jonas van Ineveld <jvanineveld@sitespect.com>"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SiteSpect-Europe/Advanced-Event-Tracking/issues"
+  },
+  "homepage": "https://github.com/SiteSpect-Europe/Advanced-Event-Tracking#readme"
+}
