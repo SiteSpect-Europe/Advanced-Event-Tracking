@@ -56,10 +56,11 @@ window.SS.Tracking = {
 
 		attributes.sort();
 		
-		var trackingUrl = '/__ssobj/track?event=' + item.event + '&' + attributes.join('&') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
-		
+		var itemEvent = typeof item.event === 'function' ? item.event(element) : item.event;
+		var trackingUrl = '/__ssobj/track?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+		var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
+
 		try {
-			var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
 			xhr.open('GET', trackingUrl);
 			
 			if(!!window.ssp_current_data) {
@@ -153,7 +154,7 @@ window.SS.Tracking = {
 				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
 					window.SS.Tracking.send(item,element);
 					if(item.callback) {
-						item.callback(data);
+						item.callback(item);
 					}
 				}
 			}
@@ -162,7 +163,7 @@ window.SS.Tracking = {
 			if(data.enumerate) {
 				window.SS.Tracking.enumerate(data.selector);
 			}
-			if(!data.selector && (!data.filter || data.filter(element)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
+			if(!data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
 				window.SS.Tracking.send(data,null);
 				if(data.callback) {
 					data.callback(data);
