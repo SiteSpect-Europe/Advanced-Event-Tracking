@@ -77,7 +77,8 @@
 
 		// monkeypatch console for debug info from script
 		console.log = function(path){
-			originalLog('testing!', ...arguments)
+			originalLog.apply(console, arguments)
+
 			if(typeof path !== 'string'){
 				return
 			}
