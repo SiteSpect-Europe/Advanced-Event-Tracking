@@ -5,6 +5,23 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Advanced event tracking - Testpage</title>
+	<script>
+		var _stsp = _stsp || [];
+
+		// monkeypatch console for debug info from script
+		var curTestResults = [];
+		var originalLog = console.log;
+		console.log = function(path){
+			originalLog.apply(console, arguments)
+
+			if(typeof path !== 'string'){
+				return
+			}
+			jQuery('<li>'+path+'</li>').prependTo('#eventlog')
+			curTestResults.push(path.replace(/&x=.*$/gm, ""))
+			jQuery('#eventlog')[0].scrollTop = 0;
+		}
+	</script>
 </head>
 <body>
 	<header>
@@ -70,24 +87,7 @@
 		jQuery('<div id="event-log-wrap"><span>Event log</span><ul id="eventlog" /></div>').prependTo('body');
 		
 		window.SS.Tracking.debug = true;
-
-		var curTestResults = [];
-
-		var originalLog = console.log;
-
-		// monkeypatch console for debug info from script
-		console.log = function(path){
-			originalLog.apply(console, arguments)
-
-			if(typeof path !== 'string'){
-				return
-			}
-			jQuery('<li>'+path+'</li>').prependTo('#eventlog')
-			curTestResults.push(path.replace(/&x=.*$/gm, ""))
-			jQuery('#eventlog')[0].scrollTop = 0;
-		}
 		
-		var _stsp = _stsp || [];
 		_stsp.push({
 			'selector':'#simple_click',
 			'event':'simpleClickEvent'
@@ -188,7 +188,7 @@
 
 		document.getElementById('init-test').addEventListener('click', function(){
 			document.getElementById('init-test').innerHTML = '<span class="loader"></span> Testing..'
-			document.body.classList.remove('valid-test')
+			document.body.removeAttribute('valid')
 			curTestResults = []
 			
 			setTimeout(function(){
@@ -214,10 +214,9 @@
 		})
 
 		function showTestResult(isValid){
-			if(isValid){
-				document.body.classList.add('valid-test')
-			} else {
-				document.body.classList.add('error-test')
+			document.body.setAttribute('valid', isValid)
+
+			if(!isValid){
 				console.error('There was a problem validating the tests');
 				console.error('Was expecting:', JSON.parse(testResultShouldBe));
 				console.error('Results where:', curTestResults);
@@ -386,11 +385,11 @@
     		color: #ffffff;
 		}
 
-		.valid-test #valid-test-result{
+		[valid="true"] #valid-test-result{
 			display: block;
 		}
 
-		.error-test #invalid-test-result{
+		[valid="false"] #invalid-test-result{
 			display: block;
 		}
 
