@@ -141,3 +141,7 @@ _stsp.push({
 ```
 
 When the element is clicked, a request will be made to: `/__ssobj/track?event=sendImmediately`
+
+# Development
+
+[To run frontend test](https://sitespect-europe.github.io/Advanced-Event-Tracking/)
