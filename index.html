@@ -79,11 +79,30 @@
 			</label>
 			<button id="custom_field_test">Send event</button>
 		</div>
+
+		<div class="form-submit-field-test">
+			<h2>Track a form submit</h2>
+			<form id="trackedForm" action="/" target="formSubmitTargetFrame">
+				<label>
+					Email
+					<input id="emailField" type="text" name="email" placeholder="email@domain.com">
+				</label>
+				<button type="submit">Verzenden</button>
+			</form>
+
+			<iframe style="display:none" name="formSubmitTargetFrame" src="" frameborder="0"><!-- prevents new tab or navigation on page while submitting --></iframe>
+		</div>
 	</div>
 	
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 	<script src="tracking.min.js"></script>
 	<script>
+		jQuery('#trackedForm').on('submit', function(e){
+			if(jQuery('#emailField').val()===''){
+				e.preventDefault()
+				return false;
+			}
+		})
 		jQuery('<div id="event-log-wrap"><span>Event log</span><ul id="eventlog" /></div>').prependTo('body');
 		
 		window.SS.Tracking.debug = true;
@@ -151,6 +170,11 @@
 		});
 
 		_stsp.push({
+			'form':'#trackedForm',
+			'event':'formSubmitted'
+		});
+
+		_stsp.push({
 			'event':'sendImmediately'
 		});
 
@@ -172,7 +196,7 @@
 			});
 		})
 
-		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4"]'
+		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4","/__ssobj/track?event=formSubmitted&form=#trackedForm"]'
 
 		function checkElements(nodes){
 			for(var i=0; i<nodes.length; i++){
@@ -193,13 +217,20 @@
 			
 			setTimeout(function(){
 				try {
-					var btns = document.querySelectorAll('#content button');
+					var btns = document.querySelectorAll('#content button:not([type="submit"])');
 
 					checkElements(btns);
 
 					var lis = document.querySelectorAll('#content .enum-tests li');
 
 					checkElements(lis);
+
+					var formSubmit = document.querySelectorAll('button[type="submit"]')[0];
+					formSubmit.click()
+
+					document.getElementById('emailField').value = 'test@test.nl';
+
+					formSubmit.click()
 
 				} catch (error) {
 					console.error('Error while testing!', error)
@@ -208,6 +239,8 @@
 				document.getElementById('init-test').innerHTML = 'Retry'
 
 				var orgStr = JSON.stringify(curTestResults);
+
+				console.log({curTestResults})
 
 				showTestResult(orgStr===testResultShouldBe)
 			}, 200)	

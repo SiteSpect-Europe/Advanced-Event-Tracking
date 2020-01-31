@@ -141,7 +141,7 @@ window.SS.Tracking = {
 		if(data.enumerate) {
 			window.SS.Tracking.enumerate(data.selector);
 		}
-		if(!data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
+		if(!data.form && !data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
 			window.SS.Tracking.send(data,null);
 			if(data.callback) {
 				data.callback(data);
@@ -171,6 +171,29 @@ window.SS.Tracking = {
 					window.SS.Tracking.send(item,element);
 					if(item.callback) {
 						item.callback(item);
+					}
+				}
+			}
+		});
+
+		document.addEventListener('submit',function(event){
+			if(!event.target) return;
+
+			for(var i=0; i<_stsp.length; i++){
+				var item = _stsp[i];
+
+				if(!item.form){
+					continue;
+				}
+				
+				var matchForm = event.target.matches(item.form)
+
+				if(matchForm){
+					if((!item.filter || item.filter(event.target)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
+						window.SS.Tracking.send(item,event.target);
+						if(item.callback) {
+							item.callback(item);
+						}
 					}
 				}
 			}

@@ -140,6 +140,17 @@ _stsp.push({
 });
 ```
 
+## Form submit
+
+You can also track form submits, when a submit is successful, the event will be send.
+
+```javascript
+var _stsp = _stsp || [];
+_stsp.push({
+    'form':'#newsletterForm'
+});
+```
+
 When the element is clicked, a request will be made to: `/__ssobj/track?event=sendImmediately`
 
 # Development
