@@ -92,6 +92,21 @@
 
 			<iframe style="display:none" name="formSubmitTargetFrame" src="" frameborder="0"><!-- prevents new tab or navigation on page while submitting --></iframe>
 		</div>
+
+		<div class="track-event">
+			<h2>Element events > STSP events</h2>
+
+			<div>
+				Track change event on select
+			</div>
+
+			<select name="t-select" id="t-select-id" class="tracked-select">
+				<option value="">Select option</option>
+				<option value="value-1" selected>Value #1</option>
+				<option value="value-2">Value #2</option>
+				<option value="value-3">Value #3</option>
+			</select>
+		</div>
 	</div>
 	
 	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -154,6 +169,12 @@
 		});
 		
 		_stsp.push({
+			'selector':'select.tracked-select',
+			'track': 'change',
+			'event':'ChangeEventHit'
+		});
+
+		_stsp.push({
 			'selector':'#click_function_attrs',
 			'event':'clickWithFunctionAttrs',
 			'aRandomNumber': function(data){
@@ -171,7 +192,10 @@
 
 		_stsp.push({
 			'form':'#trackedForm',
-			'event':'formSubmitted'
+			'event':'formSubmitted',
+			'email': function(){
+				return document.getElementById('emailField').value
+			}
 		});
 
 		_stsp.push({
@@ -196,7 +220,7 @@
 			});
 		})
 
-		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4","/__ssobj/track?event=formSubmitted&form=#trackedForm"]'
+		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4","/__ssobj/track?event=formSubmitted&email=test@test.nl","/__ssobj/track?event=ChangeEventHit&track=change&value=value-2","/__ssobj/track?event=ChangeEventHit&track=change&value=value-3"]'
 
 		function checkElements(nodes){
 			for(var i=0; i<nodes.length; i++){
@@ -220,17 +244,26 @@
 					var btns = document.querySelectorAll('#content button:not([type="submit"])');
 
 					checkElements(btns);
-
+					
 					var lis = document.querySelectorAll('#content .enum-tests li');
 
 					checkElements(lis);
+
+					// Submit forms
 
 					var formSubmit = document.querySelectorAll('button[type="submit"]')[0];
 					formSubmit.click()
 
 					document.getElementById('emailField').value = 'test@test.nl';
-
 					formSubmit.click()
+
+					// change select values
+
+					document.querySelector('select.tracked-select').value = 'value-2'
+					document.querySelector('select.tracked-select').dispatchEvent(new CustomEvent('change', { bubbles: true }));
+
+					document.querySelector('select.tracked-select').value = 'value-3'
+					document.querySelector('select.tracked-select').dispatchEvent(new CustomEvent('change', { bubbles: true }));
 
 				} catch (error) {
 					console.error('Error while testing!', error)

@@ -10,6 +10,7 @@
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
+	eventHandlers : [],
 	enumerate : function(selector) {
 		var nodes = document.querySelectorAll(selector);
 		for(var i=0; i<nodes.length; i++){
@@ -40,7 +41,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event','callback'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback', 'form'].indexOf(_key) > -1){
 				continue;
 			}
 
@@ -147,56 +148,23 @@ window.SS.Tracking = {
 				data.callback(data);
 			}				
 		}
+		if(data.track){
+			this.listenToEvent(data.track, function(event){
+				window.SS.Tracking.checkEventSend(data.track, event.target)
+			});
+		}
 	},
 	setup : function() {
 		for(var i=0; i<_stsp.length; i++){
 			window.SS.Tracking.process(_stsp[i]);
 		}
 
-		document.addEventListener('click',function(event){
-			if(!event.target) return;
-
-			for(var i=0; i<_stsp.length; i++){
-				var item = _stsp[i];
-
-				if(!item.event || !item.selector || !event.target.matches(item.selector+','+item.selector+' *')){
-					continue;
-				}
-				
-				var element = event.target.closest(item.selector);
-				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
-					window.SS.Tracking.enumerate(item.selector);
-				}
-				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
-					window.SS.Tracking.send(item,element);
-					if(item.callback) {
-						item.callback(item);
-					}
-				}
-			}
+		this.listenToEvent('click', function(event){
+			window.SS.Tracking.checkEventSend('click', event.target)
 		});
 
-		document.addEventListener('submit',function(event){
-			if(!event.target) return;
-
-			for(var i=0; i<_stsp.length; i++){
-				var item = _stsp[i];
-
-				if(!item.form){
-					continue;
-				}
-				
-				var matchForm = event.target.matches(item.form)
-
-				if(matchForm){
-					if((!item.filter || item.filter(event.target)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
-						window.SS.Tracking.send(item,event.target);
-						if(item.callback) {
-							item.callback(item);
-						}
-					}
-				}
-			}
+		this.listenToEvent('submit', function(event){
+			window.SS.Tracking.checkEventSend('submit', event.target)
 		});
 
 		_stsp.push = function(data) {
@@ -204,6 +172,67 @@ window.SS.Tracking = {
 
 			Array.prototype.push.call(this,data);
 		}
+	},
+	checkEventSend : function(type, target){
+		for(var i=0; i<_stsp.length; i++){
+			var item = _stsp[i];
+
+			// no event, or event type differs from item
+			if(!item.event || item.track && item.track!==type){
+				continue;
+			}
+
+			if(item.track && item.track!==type){
+				continue;
+			}
+
+			// now events are filtered for type. So click listener only has click events here, etc.
+
+			if(type==='submit'){
+				if(!item.form || !target.matches(item.form)){
+					continue;
+				}
+
+				// cast form selector to item, 
+				item.selector = item.form
+			}
+
+			if(!item.selector || !target.matches(item.selector+','+item.selector+' *')){
+				continue;
+			}
+
+			if(type==='change'){
+				item.value = target.value
+			}
+			
+			var element = target.closest(item.selector);
+			if(!element.getAttribute('stsp-sequence') && item.enumerate) {
+				window.SS.Tracking.enumerate(item.selector);
+			}
+			if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
+				window.SS.Tracking.send(item,element);
+				if(item.callback) {
+					item.callback(item);
+				}
+			}
+		}
+	},
+	isListening : function(type){
+		return this.eventHandlers.filter(function(config){
+			return config.type === type
+		}).length
+	},
+	listenToEvent : function(type, callback){
+		if(this.isListening(type)){
+			return; // no double listeners
+		}
+		var handler = document.addEventListener(type, function(event){
+			if(!event.target) return;
+
+			callback(event)
+		});
+
+		this.eventHandlers.push({ type: type, handler: handler });
 	}
 }
 
