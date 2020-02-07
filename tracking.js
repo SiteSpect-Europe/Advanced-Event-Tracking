@@ -1,4 +1,4 @@
-/* Copyright 2020, SiteSpect Europe. All Rights Reserved.                  */
+/* testCopyright 2020, SiteSpect Europe. All Rights Reserved.                  */
 /*                                                                         */
 /* Authors: Erwin Kerk <ekerk@sitespect.com>                               */
 /*          Jonas van Ineveld <jvanineveld@sitespect.com>                  */
@@ -174,6 +174,20 @@ window.SS.Tracking = {
 		}
 	},
 	checkEventSend : function(type, target){
+
+		var send = function(item, target){
+			var element = target.closest(item.selector);
+			if(!element.getAttribute('stsp-sequence') && item.enumerate) {
+				window.SS.Tracking.enumerate(item.selector);
+			}
+			if((!item.filter || item.filter(element))) {
+				window.SS.Tracking.send(item,element);
+				if(item.callback) {
+					item.callback(item);
+				}
+			}
+		}
+
 		for(var i=0; i<_stsp.length; i++){
 			var item = _stsp[i];
 
@@ -205,23 +219,13 @@ window.SS.Tracking = {
 				item.value = target.value
 			}
 
-			var send = function(item, target){
-				var element = target.closest(item.selector);
-				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
-					window.SS.Tracking.enumerate(item.selector);
+			// if item matches current page
+			if((!item.match || window.SS.Tracking.matcher(item.match))){
+				if(item.delay){
+					setTimeout(function(data){ send(data.item, data.target) }, item.delay, { item: item, target: target })
+				} else {
+					send(item, target)
 				}
-				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
-					window.SS.Tracking.send(item,element);
-					if(item.callback) {
-						item.callback(item);
-					}
-				}
-			}
-			
-			if(item.delay){
-				setTimeout(function(){ send(item, target) }, item.delay)
-			} else {
-				send(item, target)
 			}
 		}
 	},
