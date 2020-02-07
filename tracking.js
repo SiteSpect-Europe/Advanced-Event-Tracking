@@ -41,7 +41,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event','callback', 'form'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback', 'form', 'delay'].indexOf(_key) > -1){
 				continue;
 			}
 
