@@ -204,16 +204,24 @@ window.SS.Tracking = {
 			if(type==='change'){
 				item.value = target.value
 			}
-			
-			var element = target.closest(item.selector);
-			if(!element.getAttribute('stsp-sequence') && item.enumerate) {
-				window.SS.Tracking.enumerate(item.selector);
-			}
-			if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
-				window.SS.Tracking.send(item,element);
-				if(item.callback) {
-					item.callback(item);
+
+			var send = function(){
+				var element = target.closest(item.selector);
+				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
+					window.SS.Tracking.enumerate(item.selector);
 				}
+				if((!item.filter || item.filter(element)) && (!item.match || window.SS.Tracking.matcher(item.match))) {
+					window.SS.Tracking.send(item,element);
+					if(item.callback) {
+						item.callback(item);
+					}
+				}
+			}
+			
+			if(item.delay){
+				setTimeout(send, item.delay)
+			} else {
+				send()
 			}
 		}
 	},
