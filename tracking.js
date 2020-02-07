@@ -205,7 +205,7 @@ window.SS.Tracking = {
 				item.value = target.value
 			}
 
-			var send = function(){
+			var send = function(item, target){
 				var element = target.closest(item.selector);
 				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
 					window.SS.Tracking.enumerate(item.selector);
@@ -219,9 +219,9 @@ window.SS.Tracking = {
 			}
 			
 			if(item.delay){
-				setTimeout(send, item.delay)
+				setTimeout(function(){ send(item, target) }, item.delay)
 			} else {
-				send()
+				send(item, target)
 			}
 		}
 	},
