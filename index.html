@@ -258,7 +258,7 @@
 					formSubmit.click()
 
 					// change select values
-
+					
 					document.querySelector('select.tracked-select').value = 'value-2'
 					document.querySelector('select.tracked-select').dispatchEvent(new CustomEvent('change', { bubbles: true }));
 
@@ -292,6 +292,23 @@
 			var dt = new Date();
 			while ((new Date()) - dt <= milliseconds) { /* Do nothing */ }
 		}
+
+		// custom event IE polyfill. Only needed for this testing setup. Not for the actual AET
+
+		(function () {
+			if ( typeof window.CustomEvent === "function" ) return false; //If not IE
+
+			function CustomEvent ( event, params ) {
+				params = params || { bubbles: false, cancelable: false, detail: undefined };
+				var evt = document.createEvent( 'CustomEvent' );
+				evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+				return evt;
+			}
+
+			CustomEvent.prototype = window.Event.prototype;
+
+			window.CustomEvent = CustomEvent;
+		})();
 
 	</script>
 
