@@ -1,15 +1,17 @@
-/* testCopyright 2020, SiteSpect Europe. All Rights Reserved.                  */
+/* Copyright 2020, SiteSpect Europe. All Rights Reserved.                  */
 /*                                                                         */
 /* Authors: Erwin Kerk <ekerk@sitespect.com>                               */
 /*          Jonas van Ineveld <jvanineveld@sitespect.com>                  */
 /*                                                                         */
 /* Inject this code right before the </head> using a global variation.     */
 /*                                                                         */
-/*                           Version 1.0.2                                 */
+/*                           Version 1.0.8                                 */
 
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
+	isDebug: function(){ return !!window.SS.Tracking.debug },
+	isPreview: function(){ return !!window.ssp_current_data },
 	eventHandlers : [],
 	enumerate : function(selector) {
 		var nodes = document.querySelectorAll(selector);
@@ -31,41 +33,13 @@ window.SS.Tracking = {
 		}
 		return String(a);
 	},
-	send: function(item,element) {
-		var attributes = [],
-			itemAttrs = Object.entries(item);
-
-		for(var i =0; i<itemAttrs.length; i++){
-			var attr = itemAttrs[i],
-				_key = attr[0],
-				_val = attr[1],
-				attrStr = '';
-
-			if(['selector','filter', 'match','event','callback', 'form', 'delay'].indexOf(_key) > -1){
-				continue;
-			}
-
-			if(_key=='enumerate') {
-				attrStr = 'sequence='+element.getAttribute('stsp-sequence');
-			} else if(typeof _val == 'function') {
-				attrStr = _key + '=' + _val(element);
-			} else {
-				attrStr = _key + '=' + _val;
-			}
-
-			attributes.push(attrStr)
-		}
-
-		attributes.sort();
-		
-		var itemEvent = typeof item.event === 'function' ? item.event(element) : item.event;
-		var trackingUrl = '/__ssobj/track?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+	sendXHR: function(trackingUrl){
 		var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
 
 		try {
 			xhr.open('GET', trackingUrl);
 			
-			if(!!window.ssp_current_data) {
+			if(window.SS.Tracking.isPreview()) {
 				xhr.onreadystatechange = function(a,b,c){
 					if(xhr.readyState == xhr.HEADERS_RECEIVED) {
 						if(xhr.getResponseHeader("SiteSpect-Metrics-Info")) {
@@ -106,15 +80,61 @@ window.SS.Tracking = {
 		try {
 			xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest"), 	
 			xhr.setRequestHeader("Accept", "*/*");
+
+			xhr.send(null);
 		} catch(e) { 
+			
 			return false; 
 		}
-		
+	},
+	sendBeacon: function(trackingUrl){
+		if(!navigator && !navigator.sendBeacon){
+			window.SS.Tracking.sendXHR(trackingUrl)
+		}
 		try {
-			if(!!window.SS.Tracking.debug || !!window.ssp_current_data)
-				console.log(trackingUrl);
+			navigator.sendBeacon(trackingUrl);
+		} catch (error) {
+			window.SS.Tracking.sendXHR(trackingUrl) // send xhr anyway
+			console.log('error sending beacon!', error)
+		}
+	},
+	send: function(item,element) {
+		var attributes = [],
+			itemAttrs = Object.entries(item);
+
+		for(var i =0; i<itemAttrs.length; i++){
+			var attr = itemAttrs[i],
+				_key = attr[0],
+				_val = attr[1],
+				attrStr = '';
+
+			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track'].indexOf(_key) > -1){
+				continue;
+			}
+
+			if(_key=='enumerate') {
+				attrStr = 'sequence='+element.getAttribute('stsp-sequence');
+			} else if(typeof _val == 'function') {
+				attrStr = _key + '=' + _val(element);
+			} else {
+				attrStr = _key + '=' + _val;
+			}
+
+			attributes.push(attrStr)
+		}
+
+		attributes.sort();
 		
-			xhr.send(null);
+		var itemEvent = typeof item.event === 'function' ? item.event(element) : item.event;
+		var trackingUrl = '/__ssobj/track?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+	
+		try {
+			if(window.SS.Tracking.isPreview() || window.SS.Tracking.isDebug()){
+				console.log(trackingUrl);
+				window.SS.Tracking.sendXHR(trackingUrl);
+			} else {
+				window.SS.Tracking.sendBeacon(trackingUrl);
+			}
 		} catch (e) {
 			if (e.number & 1) return false;
 		}
@@ -217,6 +237,10 @@ window.SS.Tracking = {
 
 			if(type==='change'){
 				item.value = target.value
+			}
+
+			if(item.form && type==='click' && item.track !== 'click'){
+				continue;
 			}
 
 			// if item matches current page
