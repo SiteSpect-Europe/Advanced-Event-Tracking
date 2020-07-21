@@ -88,7 +88,7 @@ window.SS.Tracking = {
 		}
 	},
 	sendBeacon: function(trackingUrl){
-		if(!navigator && !navigator.sendBeacon){
+		if(!navigator || !navigator.sendBeacon){
 			window.SS.Tracking.sendXHR(trackingUrl)
 		}
 		try {
