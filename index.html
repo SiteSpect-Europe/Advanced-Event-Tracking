@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>Advanced event tracking - Testpage</title>
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
 	<script>
 		var _stsp = _stsp || [];
 
@@ -108,8 +109,9 @@
 			</select>
 		</div>
 	</div>
+
+	<div id="event-log-wrap"><span>Event log</span><ul id="eventlog"></ul></div>
 	
-	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
 	<script src="tracking.min.js"></script>
 	<script>
 		jQuery('#trackedForm').on('submit', function(e){
@@ -118,7 +120,6 @@
 				return false;
 			}
 		})
-		jQuery('<div id="event-log-wrap"><span>Event log</span><ul id="eventlog" /></div>').prependTo('body');
 		
 		window.SS.Tracking.debug = true;
 		
@@ -186,7 +187,7 @@
 			'selector':'#click_function_match',
 			'event':'clickWithMatches',
 			'match': {
-				pathname: 'Advanced-Event-Tracking'
+				pathname: 'index.html'
 			}
 		});
 
@@ -220,7 +221,7 @@
 			});
 		})
 
-		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4","/__ssobj/track?event=formSubmitted&email=test@test.nl","/__ssobj/track?event=ChangeEventHit&track=change&value=value-2","/__ssobj/track?event=ChangeEventHit&track=change&value=value-3"]'
+		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4","/__ssobj/track?event=formSubmitted&email=test@test.nl","/__ssobj/track?event=ChangeEventHit&value=value-2","/__ssobj/track?event=ChangeEventHit&value=value-3"]'
 
 		function checkElements(nodes){
 			for(var i=0; i<nodes.length; i++){
@@ -238,6 +239,7 @@
 			document.getElementById('init-test').innerHTML = '<span class="loader"></span> Testing..'
 			document.body.removeAttribute('valid')
 			curTestResults = []
+			document.getElementById('emailField').value = '';
 			
 			setTimeout(function(){
 				try {
