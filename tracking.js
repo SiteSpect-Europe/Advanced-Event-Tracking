@@ -33,8 +33,13 @@ window.SS.Tracking = {
 		}
 		return String(a);
 	},
-	sendXHR: function(trackingUrl){
+	sendXHR: function(trackingUrl, attributes){
 		var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
+
+		// could happen when it's a fallback for sendBeacon
+		if(!attributes){
+			attributes = []
+		}
 
 		try {
 			xhr.open('GET', trackingUrl);
@@ -131,7 +136,7 @@ window.SS.Tracking = {
 		try {
 			if(window.SS.Tracking.isPreview() || window.SS.Tracking.isDebug()){
 				console.log(trackingUrl);
-				window.SS.Tracking.sendXHR(trackingUrl);
+				window.SS.Tracking.sendXHR(trackingUrl, attributes);
 			} else {
 				window.SS.Tracking.sendBeacon(trackingUrl);
 			}
