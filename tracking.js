@@ -103,7 +103,7 @@ window.SS.Tracking = {
 			console.log('error sending beacon!', error)
 		}
 	},
-	send: function(item,element) {
+	send: function(item,element, optionalEvent) {
 		var attributes = [],
 			itemAttrs = Object.entries(item);
 
@@ -120,7 +120,7 @@ window.SS.Tracking = {
 			if(_key=='enumerate') {
 				attrStr = 'sequence='+element.getAttribute('stsp-sequence');
 			} else if(typeof _val == 'function') {
-				attrStr = _key + '=' + _val(element);
+				attrStr = _key + '=' + _val(element, optionalEvent ? optionalEvent : false);
 			} else {
 				attrStr = _key + '=' + _val;
 			}
@@ -175,7 +175,7 @@ window.SS.Tracking = {
 		}
 		if(data.track){
 			this.listenToEvent(data.track, function(event){
-				window.SS.Tracking.checkEventSend(data.track, event.target)
+				window.SS.Tracking.checkEventSend(data.track, event.target, event)
 			});
 		}
 	},
@@ -185,11 +185,11 @@ window.SS.Tracking = {
 		}
 
 		this.listenToEvent('click', function(event){
-			window.SS.Tracking.checkEventSend('click', event.target)
+			window.SS.Tracking.checkEventSend('click', event.target, event)
 		});
 
 		this.listenToEvent('submit', function(event){
-			window.SS.Tracking.checkEventSend('submit', event.target)
+			window.SS.Tracking.checkEventSend('submit', event.target, event)
 		});
 
 		_stsp.push = function(data) {
@@ -198,17 +198,17 @@ window.SS.Tracking = {
 			Array.prototype.push.call(this,data);
 		}
 	},
-	checkEventSend : function(type, target){
+	checkEventSend : function(type, target, originalEvent){
 
 		var send = function(item, target){
 			var element = target.closest(item.selector);
 			if(!element.getAttribute('stsp-sequence') && item.enumerate) {
 				window.SS.Tracking.enumerate(item.selector);
 			}
-			if((!item.filter || item.filter(element))) {
-				window.SS.Tracking.send(item,element);
+			if((!item.filter || item.filter(element, originalEvent))) {
+				window.SS.Tracking.send(item,element, originalEvent ? originalEvent : false);
 				if(item.callback) {
-					item.callback(item);
+					item.callback(item, originalEvent);
 				}
 			}
 		}
@@ -251,9 +251,9 @@ window.SS.Tracking = {
 			// if item matches current page
 			if((!item.match || window.SS.Tracking.matcher(item.match))){
 				if(item.delay){
-					setTimeout(function(data){ send(data.item, data.target) }, item.delay, { item: item, target: target })
+					setTimeout(function(data){ send(data.item, data.target, originalEvent ? originalEvent : false) }, item.delay, { item: item, target: target })
 				} else {
-					send(item, target)
+					send(item, target, originalEvent ? originalEvent : false)
 				}
 			}
 		}
