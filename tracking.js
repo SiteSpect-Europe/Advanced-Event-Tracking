@@ -129,10 +129,10 @@ window.SS.Tracking = {
 			} else if(typeof _val == 'function') {
 				var res = _val(element, optionalEvent ? optionalEvent : false);
 				attrStr = _key + '=' + res
-				resolved[key] = res
+				resolved[_key] = res
 			} else {
 				attrStr = _key + '=' + _val;
-				resolved[key] = _val;
+				resolved[_key] = _val;
 			}
 
 			attributes.push(attrStr)
@@ -216,9 +216,9 @@ window.SS.Tracking = {
 				window.SS.Tracking.enumerate(item.selector);
 			}
 			if((!item.filter || item.filter(element, originalEvent))) {
-				window.SS.Tracking.send(item,element, originalEvent ? originalEvent : false);
+				var rdata = window.SS.Tracking.send(item,element, originalEvent ? originalEvent : false);
 				if(item.callback) {
-					item.callback(item, originalEvent);
+					item.callback(rdata, originalEvent);
 				}
 			}
 		}
