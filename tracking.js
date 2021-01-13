@@ -105,7 +105,14 @@ window.SS.Tracking = {
 	},
 	send: function(item,element, optionalEvent) {
 		var attributes = [],
-			itemAttrs = Object.entries(item);
+			itemAttrs = Object.entries(item),
+			resolved = {
+				_event: {
+					stspEvent: item,
+					element: element,
+					event: optionalEvent, 
+				}
+			}
 
 		for(var i =0; i<itemAttrs.length; i++){
 			var attr = itemAttrs[i],
@@ -120,9 +127,12 @@ window.SS.Tracking = {
 			if(_key=='enumerate') {
 				attrStr = 'sequence='+element.getAttribute('stsp-sequence');
 			} else if(typeof _val == 'function') {
-				attrStr = _key + '=' + _val(element, optionalEvent ? optionalEvent : false);
+				var res = _val(element, optionalEvent ? optionalEvent : false);
+				attrStr = _key + '=' + res
+				resolved[key] = res
 			} else {
 				attrStr = _key + '=' + _val;
+				resolved[key] = _val;
 			}
 
 			attributes.push(attrStr)
@@ -143,7 +153,7 @@ window.SS.Tracking = {
 		} catch (e) {
 			if (e.number & 1) return false;
 		}
-		return true;
+		return resolved;
 	},
 	matcher: function(criteria) {
 		return !Object.entries(criteria).filter(function(arr){
@@ -168,9 +178,9 @@ window.SS.Tracking = {
 			window.SS.Tracking.enumerate(data.selector);
 		}
 		if(!data.form && !data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
-			window.SS.Tracking.send(data,null);
+			var rdata = window.SS.Tracking.send(data,null);
 			if(data.callback) {
-				data.callback(data);
+				data.callback(rdata);
 			}				
 		}
 		if(data.track){
