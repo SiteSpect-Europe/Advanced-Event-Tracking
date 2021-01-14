@@ -6,6 +6,8 @@
  * navigation.
 */
 (function(STSP_Tracking){
+	// whenever there is a page navigation detected
+	// evaluate all events that have no other events related to it
 	function evalEvents(){
 		for(var i=0; i<_stsp.length; i++){
 			var event = _stsp[i];
@@ -16,6 +18,8 @@
 		}
 	}
 
+	// monkeypatch the historyAPI control functions
+	// SPA frameworks will use these to navigate
 	(function(history) { 
 		function mp(type){
 			var orig = history[type]; 
