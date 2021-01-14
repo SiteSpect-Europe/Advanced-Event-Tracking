@@ -1,0 +1,275 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Advanced event tracking - unit test</title>
+	<link rel="shortcut icon" type="image/png" href="./jasmine-3.6.0/jasmine_favicon.png">
+	<link rel="stylesheet" type="text/css" href="./jasmine-3.6.0/jasmine.css">
+
+	<script src="./jasmine-3.6.0/jasmine.js"></script>
+	<script src="./jasmine-3.6.0/jasmine-html.js"></script>
+	<script src="./jasmine-3.6.0/boot.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+
+	<script>
+		const sentEvents = [] // store requests to validate events are sent
+		const docListeners = [] // store doc listeners
+
+		function checkEventSent(eventName){
+			for(event of sentEvents){
+				if(event.name === eventName){
+					return event;
+				}
+			}
+			return false;
+		}
+
+		function addEventToSent(url){
+			var urlParts = url.match(/\?event=(.*?)(&|$)(.*)/)
+			
+			var event = {
+				name: urlParts[1]
+			}
+			var otherParams = urlParts[3].split('&');
+			otherParams.forEach(param => {
+				var paramParts = param.split('=')
+				event[paramParts[0]] = paramParts[1]
+			});
+
+			sentEvents.push(event)
+		}
+
+		function checkListenerSet(type){
+			return docListeners.indexOf(type) > -1
+		}
+
+		// used for clearing sent events when doing many tests in 1 go
+		// this prevents false positive sents
+		function reset(){
+			sentEvents = [];
+		}
+
+		// xhr monkeypatch when fallback needs to be used
+		(function(xhr) {
+			var send = xhr.send;
+			xhr.send = function(data) {
+				this.onprogress = function() {
+					addEventToSent(this.responseURL)
+				};
+				return send.apply(this, arguments);
+			};
+		})(XMLHttpRequest.prototype);
+
+		if(navigator && navigator.sendBeacon){
+			(function(navigator) {
+				// Capture request before any network activity occurs:
+				var send = navigator.sendBeacon;
+				navigator.sendBeacon = function(url) {
+					addEventToSent(url)
+					return send.apply(this, arguments);
+				};
+			})(navigator);
+		}
+
+		(function(EventTarget) {
+			var f = EventTarget.prototype.addEventListener;
+			EventTarget.prototype.addEventListener = function(type, fn, capture) {
+				this.f = f;
+				this.f(type, fn, capture);
+				// console.log('Added Event Listener: on' + fn, capture, this);
+				docListeners.push(type)
+
+			}
+
+		})(EventTarget);
+		
+	</script>
+	<script src="./../tracking.js"></script>
+</head>
+<body>
+	<div id="content" class="wrap">
+		<div class="simple-buttons">
+			<button id="simple_click">Send click event</button>
+			<button id="simple_click_attrs">Send click with attributes</button>
+			<button id="click_callback">Send click event, with callback</button>
+			<button id="click_function_attrs">Send click event, with function in attributes</button>
+		
+			<button id="click_function_match">Click event with matches</button>
+		
+			<a id="immediateFilterTest" href="#">immediateFilter</a>
+			<a id="immediateMatchesTest" href="#">immediateMatches</a>
+		</div>
+	
+		<div class="enum-tests">
+			<h2>Ennumerate test</h2>
+			<p>Clicking on item should trigger event with enumeration index</p>
+			<ul class="enum-list">
+				<li>USP #1</li>
+				<li>USP #2</li>
+				<li>USP #3</li>
+				<li>USP #4</li>
+			</ul>
+	
+			<h2>Filter test</h2>
+			<p>Only the click usps are triggers</p>
+			<ul class="filtered-enum-list">
+				<li>USP #1</li>
+				<li class="click">Click USP #2</li>
+				<li>USP #3</li>
+				<li class="click">Click USP #4</li>
+			</ul>
+		</div>
+
+		<div class="custom-field-test">
+			<h2>Send a custom event</h2>
+			<label>
+				<span>Event name</span>
+				<input type="text" id="custom-field-event-name" value="CustomEvent">
+			</label>
+			<label>
+				<span>Value</span>
+				<input type="text" id="custom-field-value" value="123-456">
+			</label>
+			<button id="custom_field_test">Send event</button>
+		</div>
+
+		<div class="form-submit-field-test">
+			<h2>Track a form submit</h2>
+			<form id="trackedForm" action="./blank.html" target="formSubmitTargetFrame">
+				<label>
+					Email
+					<input id="emailField" type="text" name="email" placeholder="email@domain.com">
+				</label>
+				<button type="submit">Verzenden</button>
+			</form>
+
+			<iframe style="display:none" name="formSubmitTargetFrame" src="./blank.html" frameborder="0"><!-- prevents new tab or navigation on page while submitting --></iframe>
+		</div>
+
+		<div class="track-event">
+			<h2>Element events > STSP events</h2>
+
+			<div>
+				Track change event on select
+			</div>
+
+			<select name="t-select" id="t-select-id" class="tracked-select">
+				<option value="">Select option</option>
+				<option value="value-1" selected>Value #1</option>
+				<option value="value-2">Value #2</option>
+				<option value="value-3">Value #3</option>
+			</select>
+		</div>
+	</div>
+	<script>
+		describe('Basic', () => {
+			it('Document level click listener set', () => {
+				expect(checkListenerSet('click')).toBe(true)
+			})
+			it('Document level submit listener set', () => {
+				expect(checkListenerSet('submit')).toBe(true)
+			})
+		})
+
+		describe('Direct event sent', () => {
+			_stsp.push({
+				'event':'simpleEventSent'
+			});
+			_stsp.push({
+				'event':'simpleEventSentToTestXvar'
+			});
+
+			it('event sent', () => {
+				expect(checkEventSent('simpleEventSent')).not.toBe(false)
+			})
+
+			it('has x var for randomisation', () => {
+				const didsendA = checkEventSent('simpleEventSent')
+				const didsendB = checkEventSent('simpleEventSentToTestXvar')
+
+				expect(didsendA.x).not.toBe(didsendB.x);
+			})
+		})
+
+		describe('Complex click listener', () => {
+			_stsp.push({
+				'event': () => true ? 'simpleClickEventSent' : 'otherEventNeverSent',
+				'selector': '#simple_click',
+				'custom-value': () => "resolved",
+				'callback': function(){
+					window.clickListenerWasCalledBack = arguments
+				}
+			});
+
+			$('#simple_click').click()
+
+			it('event sent', () => {
+				expect(checkEventSent('simpleClickEventSent')).not.toBe(false)
+			})
+
+			it('event sent with custom value', () => {
+				const didsend = checkEventSent('simpleClickEventSent')
+				expect(didsend['custom-value']).toBe("resolved");
+			})
+			
+			it('Callback has functions resolved', () => {
+				const didsend = checkEventSent('simpleClickEventSent')				
+				expect(window.clickListenerWasCalledBack[0]['_event']['element']).not.toBeNull();
+				expect(window.clickListenerWasCalledBack[0]['custom-value']).toBe("resolved");
+			})
+		})
+
+		describe('form listener', () => {
+			_stsp.push({
+				'form':'#trackedForm',
+				'event':'formSubmitted',
+				'email': function(){
+					console.log('arguments', arguments)
+					return document.getElementById('emailField').value
+				}
+			});
+			const email = 'test@test.nl'
+			document.getElementById('emailField').value = email
+			$('#trackedForm button').click()
+
+			it('event sent', () => {
+				expect(checkEventSent('formSubmitted')).not.toBe(false)
+			})
+
+			it('custom email field resolved', () => {
+				const didsend = checkEventSent('formSubmitted')
+				expect(didsend['email']).toBe(email);
+			})
+			
+			it('Callback has functions resolved', () => {
+				const didsend = checkEventSent('simpleClickEventSent')				
+				expect(window.clickListenerWasCalledBack[0]['_event']['element']).not.toBeNull();
+				expect(window.clickListenerWasCalledBack[0]['custom-value']).toBe("resolved");
+			})
+		})
+
+		describe('Form element change', () => {
+			_stsp.push({
+				'selector':'select.tracked-select',
+				'track': 'change',
+				'event':'ChangeEventHit',
+				'node_value': function($node){
+					return $node.value
+				}
+			});
+
+			document.querySelector('select.tracked-select').value = 'value-2'
+			document.querySelector('select.tracked-select').dispatchEvent(new CustomEvent('change', { bubbles: true }));
+
+			it('event sent', () => {
+				expect(checkEventSent('ChangeEventHit')).not.toBe(false)
+			})
+
+			it('event sent, custom value node reference', () => {
+				expect(checkEventSent('ChangeEventHit').node_value).toBe('value-2')
+			})
+		})
+	</script>
+</body>
+</html>
