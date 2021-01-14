@@ -13,6 +13,9 @@ window.SS.Tracking = {
 	isDebug: function(){ return !!window.SS.Tracking.debug },
 	isPreview: function(){ return !!window.ssp_current_data },
 	eventHandlers : [],
+	trackers: {
+		index: []
+	},
 	enumerate : function(selector) {
 		var nodes = document.querySelectorAll(selector);
 		for(var i=0; i<nodes.length; i++){
@@ -124,6 +127,10 @@ window.SS.Tracking = {
 				continue;
 			}
 
+			if(['object'].indexOf(typeof _val) > -1){
+				continue;
+			}
+
 			if(_key=='enumerate') {
 				attrStr = 'sequence='+element.getAttribute('stsp-sequence');
 			} else if(typeof _val == 'function') {
@@ -175,18 +182,22 @@ window.SS.Tracking = {
 	},
 	process : function(data){
 		if(data.enumerate) {
-			window.SS.Tracking.enumerate(data.selector);
+			this.enumerate(data.selector);
 		}
 		if(!data.form && !data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
-			var rdata = window.SS.Tracking.send(data,null);
+			var rdata = this.send(data,null);
 			if(data.callback) {
 				data.callback(rdata);
-			}				
+			}
 		}
 		if(data.track){
-			this.listenToEvent(data.track, function(event){
-				window.SS.Tracking.checkEventSend(data.track, event.target, event)
-			});
+			if(this.trackers.index.indexOf(data.track) > -1){
+				this.trackersFn('newEvent', data);
+			} else {
+				this.listenToEvent(data.track, function(event){
+					window.SS.Tracking.checkEventSend(data.track, event.target, event)
+				});
+			}
 		}
 	},
 	setup : function() {
@@ -284,6 +295,21 @@ window.SS.Tracking = {
 		});
 
 		this.eventHandlers.push({ type: type, handler: handler });
+	},
+	extendTrack : function(name, tracker){
+		if(this.trackers.index.indexOf(name) > -1){
+			return;
+		}
+		window.SS.Tracking.trackers[name] = tracker();
+		this.trackers.index.push(name)
+	},
+	trackersFn : function(type, event){ // a way to send update to all trackers
+		Object.keys(window.SS.Tracking.trackers).forEach(name => {
+			if(typeof window.SS.Tracking.trackers[name][type] === 'function'){
+				var fn = window.SS.Tracking.trackers[name][type]
+				fn(event)
+			}
+		})
 	}
 }
 
