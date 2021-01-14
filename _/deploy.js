@@ -1,8 +1,13 @@
 /** 
  * This file will run after source has been compressed & uglified to /tracking.ugly.js
  * Here we add a comment with the correct version number and copyright
+ * 
+ * usage:
+ * node _/deploy.js tracking.js
 */
 const fs = require('fs');
+
+const targetFile = process.argv[2]; // should be a 2nd param
 
 const packageJson = require('./../package.json');
 const currentYear = new Date().getFullYear();
@@ -14,7 +19,6 @@ const comment = `/**
 */`
 
 const uglySource = './tracking.ugly.js';
-const targetFile = './tracking.min.js';
 
 const usource = fs.readFileSync(uglySource, 'utf8')
 
