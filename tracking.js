@@ -304,7 +304,7 @@ window.SS.Tracking = {
 		this.trackers.index.push(name)
 	},
 	trackersFn : function(type, event){ // a way to send update to all trackers
-		Object.keys(window.SS.Tracking.trackers).forEach(name => {
+		Object.keys(window.SS.Tracking.trackers).forEach(function(name){
 			if(typeof window.SS.Tracking.trackers[name][type] === 'function'){
 				var fn = window.SS.Tracking.trackers[name][type]
 				fn(event)
