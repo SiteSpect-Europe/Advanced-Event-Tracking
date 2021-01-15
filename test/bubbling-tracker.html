@@ -1,0 +1,109 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="./../tracking.js"></script>
+	<script src="./../optional_modules/bubble-fix.js"></script>
+
+	<style>
+		.banner{
+			width: 100px;
+			height: 200px;
+			background-color: #f2f2f2;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+		}
+		.banner button{
+			margin-top: 30px;
+		}
+		.banners{
+			display: flex;
+			margin-top: 20px;
+		}
+		.banner + .banner{
+			margin-left: 10px;
+		}
+	</style>
+</head>
+<body>
+	<div id="wrapper">
+		<form id="propagationPreventedForm" action="">
+			<input type="text" placeholder="email" value="person@domain.tld">
+			<button type="submit">Submit</button>
+		</form>
+		<button id="create-banner">Create banner</button>
+		<div class="banners">
+			<div id="banner" class="banner">
+				<span>banner!</span>
+				<button>CTA</button>
+			</div>
+		</div>
+	</div>
+	<script>
+		document.getElementById('propagationPreventedForm').addEventListener('submit', function(e){
+			e.preventDefault();
+			e.stopPropagation()
+
+			return false;
+		})
+
+		
+
+		function bannerPrevent(id){
+			document.getElementById(id).addEventListener('click', function(e){
+				e.preventDefault();
+				e.stopPropagation()
+
+				return false;
+			})
+		}
+
+		bannerPrevent('banner')
+
+
+		document.getElementById('create-banner').addEventListener('click', function(){
+			var $banner2 = document.getElementById('banner').cloneNode(true);
+			$banner2.id = 'banner-'+(document.querySelectorAll('.banner').length+1);
+			$banner2.querySelector('button').removeAttribute('listenerset')
+			document.querySelector('.banners').appendChild($banner2)
+			bannerPrevent($banner2.id)
+		})
+
+		// this won't work since the event wont bubble up
+		// _stsp.push({
+		// 	'event': "toplevelhandler",
+		// 	'form': "#propagationPreventedForm",
+		// 	'callback': function(){
+		// 		console.log('form submit captured!', arguments)
+		// 	},
+		// 	'email': function($form){
+		// 		return $form.querySelector('input').value
+		// 	}
+		// })
+
+		_stsp.push({
+			'event': "elementhandler",
+			"bubble-fix": true,
+			"track": "submit",
+			'selector': "#propagationPreventedForm",
+			'callback': function(){
+				// console.log('form submit captured!', arguments)
+			},
+			'email': function($form){
+				return $form.querySelector('input').value
+			}
+		})
+
+		_stsp.push({
+			event: "BannerCtaClick",
+			selector: ".banner button",
+			"bubble-fix": true
+		})
+		
+	</script>
+</body>
+</html>
