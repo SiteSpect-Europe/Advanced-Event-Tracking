@@ -4,6 +4,14 @@
  * This adapter will ensure page navigations will evaluate all 'non' event related events
  * So if there is a click, form, or track event related to the event, it won't get evaluated every
  * navigation.
+ * 
+ * Events will get evaluated when:
+ * - match is defined
+ * - Filter is defined
+ * and
+ * - Not a form defined
+ * - Not a selector is defined
+ * - Not a customer tracker is defined
 */
 (function(STSP_Tracking){
 	// whenever there is a page navigation detected
@@ -12,7 +20,7 @@
 		for(var i=0; i<_stsp.length; i++){
 			var event = _stsp[i];
 			// all the 'non' event related events need to be evaluated
-			if(!event.form && !event.selector && !event.track) {
+			if((event.match || event.filter) && (!event.form && !event.selector && !event.track)) {
 				STSP_Tracking.process(event);
 			}
 		}
