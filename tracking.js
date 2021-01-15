@@ -13,7 +13,7 @@ window.SS.Tracking = {
 	isDebug: function(){ return !!window.SS.Tracking.debug },
 	isPreview: function(){ return !!window.ssp_current_data },
 	eventHandlers : [],
-	trackers: {
+	modules: {
 		index: []
 	},
 	enumerate : function(selector) {
@@ -191,14 +191,12 @@ window.SS.Tracking = {
 			}
 		}
 		if(data.track){
-			if(this.trackers.index.indexOf(data.track) > -1){
-				this.trackersFn('newEvent', data);
-			} else {
-				this.listenToEvent(data.track, function(event){
-					window.SS.Tracking.checkEventSend(data.track, event.target, event)
-				});
-			}
+			this.listenToEvent(data.track, function(event){
+				window.SS.Tracking.checkEventSend(data.track, event.target, event)
+			});
 		}
+
+		this.modulesFn('newEvent', data);
 	},
 	setup : function() {
 		for(var i=0; i<_stsp.length; i++){
@@ -220,7 +218,6 @@ window.SS.Tracking = {
 		}
 	},
 	checkEventSend : function(type, target, originalEvent){
-
 		var send = function(item, target){
 			var element = target.closest(item.selector);
 			if(!element.getAttribute('stsp-sequence') && item.enumerate) {
@@ -247,16 +244,16 @@ window.SS.Tracking = {
 			}
 
 			// now events are filtered for type. So click listener only has click events here, etc.
-
+			
 			if(type==='submit'){
-				if(!item.form || !target.matches(item.form)){
+				if(!item.selector && (!item.form || !target.matches(item.form+','+item.selector+' *'))){
 					continue;
 				}
-
+				
 				// cast form selector to item, 
-				item.selector = item.form
+				item.selector = item.selector ? item.selector : item.form
 			}
-
+			
 			if(!item.selector || !target.matches(item.selector+','+item.selector+' *')){
 				continue;
 			}
@@ -284,11 +281,12 @@ window.SS.Tracking = {
 			return config.type === type
 		}).length
 	},
-	listenToEvent : function(type, callback){
+	listenToEvent : function(type, callback, $node){
 		if(this.isListening(type)){
 			return; // no double listeners
 		}
-		var handler = document.addEventListener(type, function(event){
+		var target = $node ? $node : document
+		var handler = target.addEventListener(type, function(event){
 			if(!event.target) return;
 
 			callback(event)
@@ -296,17 +294,17 @@ window.SS.Tracking = {
 
 		this.eventHandlers.push({ type: type, handler: handler });
 	},
-	extendTrack : function(name, tracker){
-		if(this.trackers.index.indexOf(name) > -1){
+	addModule : function(name, tracker){
+		if(this.modules.index.indexOf(name) > -1){
 			return;
 		}
-		window.SS.Tracking.trackers[name] = tracker();
-		this.trackers.index.push(name)
+		window.SS.Tracking.modules[name] = tracker();
+		this.modules.index.push(name)
 	},
-	trackersFn : function(type, event){ // a way to send update to all trackers
-		Object.keys(window.SS.Tracking.trackers).forEach(function(name){
-			if(typeof window.SS.Tracking.trackers[name][type] === 'function'){
-				var fn = window.SS.Tracking.trackers[name][type]
+	modulesFn : function(type, event){ // a way to send update to all modules
+		Object.keys(window.SS.Tracking.modules).forEach(function(name){
+			if(typeof window.SS.Tracking.modules[name][type] === 'function'){
+				var fn = window.SS.Tracking.modules[name][type]
 				fn(event)
 			}
 		})
