@@ -25,7 +25,7 @@ window.SS.Tracking.addModule('request', function(){
 
 		// Patch fetch
 		if(window.fetch){
-			const originalFetch = window.fetch;
+			var originalFetch = window.fetch;
 			window.fetch = function(url) {
 				checkEventForUrl(url, this)
 				return originalFetch.apply(this, arguments);
