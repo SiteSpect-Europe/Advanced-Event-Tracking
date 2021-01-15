@@ -123,7 +123,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track', 'url_match'].indexOf(_key) > -1){
 				continue;
 			}
 
@@ -217,12 +217,18 @@ window.SS.Tracking = {
 			Array.prototype.push.call(this,data);
 		}
 	},
-	checkEventSend : function(type, target, originalEvent){
+	// used to directly send a event from module
+	evalEventSent: function(item, target, originalEvent){
 		var send = function(item, target){
-			var element = target.closest(item.selector);
-			if(!element.getAttribute('stsp-sequence') && item.enumerate) {
-				window.SS.Tracking.enumerate(item.selector);
+			if(!target){ // not DOM related
+
+			} else {
+				var element = target.closest(item.selector);
+				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
+					window.SS.Tracking.enumerate(item.selector);
+				}
 			}
+
 			if((!item.filter || item.filter(element, originalEvent))) {
 				var rdata = window.SS.Tracking.send(item,element, originalEvent ? originalEvent : false);
 				if(item.callback) {
@@ -230,7 +236,15 @@ window.SS.Tracking = {
 				}
 			}
 		}
-
+		if((!item.match || window.SS.Tracking.matcher(item.match))){
+			if(item.delay){
+				setTimeout(function(data){ send(data.item, data.target, originalEvent ? originalEvent : false) }, item.delay, { item: item, target: target })
+			} else {
+				send(item, target, originalEvent ? originalEvent : false)
+			}
+		}
+	},
+	checkEventSend : function(type, target, originalEvent){
 		for(var i=0; i<_stsp.length; i++){
 			var item = _stsp[i];
 
@@ -266,14 +280,7 @@ window.SS.Tracking = {
 				continue;
 			}
 
-			// if item matches current page
-			if((!item.match || window.SS.Tracking.matcher(item.match))){
-				if(item.delay){
-					setTimeout(function(data){ send(data.item, data.target, originalEvent ? originalEvent : false) }, item.delay, { item: item, target: target })
-				} else {
-					send(item, target, originalEvent ? originalEvent : false)
-				}
-			}
+			this.evalEventSent(item, target, originalEvent);
 		}
 	},
 	isListening : function(type){
