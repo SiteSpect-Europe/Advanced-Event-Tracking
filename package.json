@@ -9,8 +9,8 @@
   "devDependencies": {},
   "scripts": {
     "build": "uglifyjs --compress --mangle --output tracking.ugly.js -- tracking.js && node _/deploy.js dist/tracking.min.js",
-    "build-elinview": "uglifyjs --compress --mangle --output tracking.ugly.js -- optional_modules/element-in-view.js && node _/deploy.js dist/tracking.module.element_in_view.min.js",
-    "build-spaadapter": "uglifyjs --compress --mangle --output tracking.ugly.js -- optional_modules/spa-adapter.js && node _/deploy.js  dist/tracking.module.spa-adapter.min.js",
+    "build-bundled": "node _/deploy_bundled.js",
+    "build-modules": "node _/deploy_modules.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
