@@ -10,6 +10,7 @@ const targetFile = 'dist/tracking.combined.js';
 const includedModules = [
 	'element-in-view',
 	'bubble-fix',
+	'request-listener',
 	'spa-adapter'
 ]
 
