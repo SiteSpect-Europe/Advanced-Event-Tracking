@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>Advanced event tracking - Testpage</title>
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+	<script>
+		var _stsp = _stsp || [];
+
+		// monkeypatch console for debug info from script
+		var curTestResults = [];
+		var originalLog = console.log;
+		console.log = function(path){
+			originalLog.apply(console, arguments)
+
+			if(typeof path !== 'string'){
+				return
+			}
+			jQuery('<li>'+path+'</li>').prependTo('#eventlog')
+			curTestResults.push(path.replace(/&x=.*$/gm, ""))
+			jQuery('#eventlog')[0].scrollTop = 0;
+		}
+	</script>
+</head>
+<body>
+	<header>
+		<h1>Browser test</h1>
+		<button id="init-test">Init test run</button>
+	</header>
+	<div id="valid-test-result">
+		All checks have been succesfull
+	</div>
+	<div id="invalid-test-result">
+		There was a problem. Check the console for information
+	</div>
+	<div id="content" class="wrap">
+		<div class="simple-buttons">
+			<button id="simple_click">Send click event</button>
+			<button id="simple_click_attrs">Send click with attributes</button>
+			<button id="click_callback">Send click event, with callback</button>
+			<button id="click_function_attrs">Send click event, with function in attributes</button>
+		
+			<button id="click_function_match">Click event with matches</button>
+		
+			<a id="immediateFilterTest" href="#">immediateFilter</a>
+			<a id="immediateMatchesTest" href="#">immediateMatches</a>
+		</div>
+	
+		<div class="enum-tests">
+			<h2>Ennumerate test</h2>
+			<p>Clicking on item should trigger event with enumeration index</p>
+			<ul class="enum-list">
+				<li>USP #1</li>
+				<li>USP #2</li>
+				<li>USP #3</li>
+				<li>USP #4</li>
+			</ul>
+	
+			<h2>Filter test</h2>
+			<p>Only the click usps are triggers</p>
+			<ul class="filtered-enum-list">
+				<li>USP #1</li>
+				<li class="click">Click USP #2</li>
+				<li>USP #3</li>
+				<li class="click">Click USP #4</li>
+			</ul>
+		</div>
+
+		<div class="custom-field-test">
+			<h2>Send a custom event</h2>
+			<label>
+				<span>Event name</span>
+				<input type="text" id="custom-field-event-name" value="CustomEvent">
+			</label>
+			<label>
+				<span>Value</span>
+				<input type="text" id="custom-field-value" value="123-456">
+			</label>
+			<button id="custom_field_test">Send event</button>
+		</div>
+
+		<div class="form-submit-field-test">
+			<h2>Track a form submit</h2>
+			<form id="trackedForm" action="/" target="formSubmitTargetFrame">
+				<label>
+					Email
+					<input id="emailField" type="text" name="email" placeholder="email@domain.com">
+				</label>
+				<button type="submit">Verzenden</button>
+			</form>
+
+			<iframe style="display:none" name="formSubmitTargetFrame" src="" frameborder="0"><!-- prevents new tab or navigation on page while submitting --></iframe>
+		</div>
+
+		<div class="track-event">
+			<h2>Element events > STSP events</h2>
+
+			<div>
+				Track change event on select
+			</div>
+
+			<select name="t-select" id="t-select-id" class="tracked-select">
+				<option value="">Select option</option>
+				<option value="value-1" selected>Value #1</option>
+				<option value="value-2">Value #2</option>
+				<option value="value-3">Value #3</option>
+			</select>
+		</div>
+	</div>
+
+	<div id="event-log-wrap"><span>Event log</span><ul id="eventlog"></ul></div>
+	
+	<script src="../dist/tracking.min.js"></script>
+	<script>
+		jQuery('#trackedForm').on('submit', function(e){
+			if(jQuery('#emailField').val()===''){
+				e.preventDefault()
+				return false;
+			}
+		})
+		
+		window.SS.Tracking.debug = true;
+		
+		_stsp.push({
+			'selector':'#simple_click',
+			'event':'simpleClickEvent'
+		});
+
+		_stsp.push({
+			'selector':'#simple_click_attrs',
+			'event':'simpleClickEventWithAttributes',
+			'attr1': 'Some Value',
+			'attr2': 'Another Value',
+			'valNum': 121.41
+		});
+
+		_stsp.push({
+			'selector':'#click_callback',
+			'event':'clickWithCallBack',
+			'callback': function(data){
+				console.log('Callback fired - ' + JSON.stringify(data) )
+			}
+		});
+
+		_stsp.push({
+			'selector':'#custom_field_test',
+			'event': function(){
+				return document.getElementById('custom-field-event-name').value
+			},
+			'value': function(){
+				return document.getElementById('custom-field-value').value;
+			}
+		});
+
+		_stsp.push({
+			'selector':'.enum-list li',
+			'event':'USPListClick',
+			'enumerate': true
+		});
+
+		_stsp.push({
+			'selector':'.filtered-enum-list li',
+			'event':'USPFilteredListClick',
+			'enumerate': true,
+			'filter': function(el){
+				return el.className.indexOf('click') > -1
+			}
+		});
+		
+		_stsp.push({
+			'selector':'select.tracked-select',
+			'track': 'change',
+			'event':'ChangeEventHit'
+		});
+
+		_stsp.push({
+			'selector':'#click_function_attrs',
+			'event':'clickWithFunctionAttrs',
+			'aRandomNumber': function(data){
+				return 100
+			}
+		});
+
+		_stsp.push({
+			'selector':'#click_function_match',
+			'event':'clickWithMatches',
+			'match': {
+				pathname: 'browser-test.html'
+			}
+		});
+
+		_stsp.push({
+			'form':'#trackedForm',
+			'event':'formSubmitted',
+			'email': function(){
+				return document.getElementById('emailField').value
+			}
+		});
+
+		_stsp.push({
+			'event':'sendImmediately'
+		});
+
+		document.getElementById('immediateFilterTest').addEventListener('click', function(){
+			_stsp.push({
+				'event':'sendImmediatelyWithFilter',
+				'filter': function(){
+					return document.location.pathname.indexOf('Advanced-Event-Tracking') > -1
+				}
+			});
+		});
+
+		document.getElementById('immediateMatchesTest').addEventListener('click', function(){
+			_stsp.push({
+				'event':'sendImmediatelyWithMatches',
+				'match': {
+					'pathname': 'Advanced-Event-Tracking'
+				}
+			});
+		})
+
+		var testResultShouldBe = '["/__ssobj/track?event=simpleClickEvent","/__ssobj/track?event=simpleClickEventWithAttributes&attr1=Some Value&attr2=Another Value&valNum=121.41","/__ssobj/track?event=clickWithCallBack","Callback fired - {\\"_event\\":{\\"stspEvent\\":{\\"selector\\":\\"#click_callback\\",\\"event\\":\\"clickWithCallBack\\"},\\"element\\":{},\\"event\\":{\\"isTrusted\\":false}}}","/__ssobj/track?event=clickWithFunctionAttrs&aRandomNumber=100","/__ssobj/track?event=clickWithMatches","/__ssobj/track?event=CustomEvent&value=123-456","/__ssobj/track?event=USPListClick&sequence=1","/__ssobj/track?event=USPListClick&sequence=2","/__ssobj/track?event=USPListClick&sequence=3","/__ssobj/track?event=USPListClick&sequence=4","/__ssobj/track?event=USPFilteredListClick&sequence=2","/__ssobj/track?event=USPFilteredListClick&sequence=4","/__ssobj/track?event=formSubmitted&email=test@test.nl","/__ssobj/track?event=ChangeEventHit&value=value-2","/__ssobj/track?event=ChangeEventHit&value=value-3"]'
+
+		function checkElements(nodes){
+			for(var i=0; i<nodes.length; i++){
+				var node = nodes[i];
+
+				if(i>0){
+					pauseInSync(200);
+				}
+
+				node.click();
+			}
+		}
+
+		document.getElementById('init-test').addEventListener('click', function(){
+			document.getElementById('init-test').innerHTML = '<span class="loader"></span> Testing..'
+			document.body.removeAttribute('valid')
+			curTestResults = []
+			document.getElementById('emailField').value = '';
+			
+			setTimeout(function(){
+				try {
+					var btns = document.querySelectorAll('#content button:not([type="submit"])');
+
+					checkElements(btns);
+					
+					var lis = document.querySelectorAll('#content .enum-tests li');
+
+					checkElements(lis);
+
+					// Submit forms
+
+					var formSubmit = document.querySelectorAll('button[type="submit"]')[0];
+					formSubmit.click()
+
+					document.getElementById('emailField').value = 'test@test.nl';
+					formSubmit.click()
+
+					// change select values
+					
+					document.querySelector('select.tracked-select').value = 'value-2'
+					document.querySelector('select.tracked-select').dispatchEvent(new CustomEvent('change', { bubbles: true }));
+
+					document.querySelector('select.tracked-select').value = 'value-3'
+					document.querySelector('select.tracked-select').dispatchEvent(new CustomEvent('change', { bubbles: true }));
+
+				} catch (error) {
+					console.error('Error while testing!', error)
+				}
+
+				document.getElementById('init-test').innerHTML = 'Retry'
+
+				var orgStr = JSON.stringify(curTestResults);
+
+				showTestResult(orgStr===testResultShouldBe)
+			}, 200)	
+		})
+
+		function showTestResult(isValid){
+			document.body.setAttribute('valid', isValid)
+
+			if(!isValid){
+				console.error('There was a problem validating the tests');
+				console.error('Was expecting:', JSON.parse(testResultShouldBe));
+				console.error('Results where:', curTestResults);
+
+			}
+		}
+
+		function pauseInSync(milliseconds) {
+			var dt = new Date();
+			while ((new Date()) - dt <= milliseconds) { /* Do nothing */ }
+		}
+
+		// custom event IE polyfill. Only needed for this testing setup. Not for the actual AET
+
+		(function () {
+			if ( typeof window.CustomEvent === "function" ) return false; //If not IE
+
+			function CustomEvent ( event, params ) {
+				params = params || { bubbles: false, cancelable: false, detail: undefined };
+				var evt = document.createEvent( 'CustomEvent' );
+				evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+				return evt;
+			}
+
+			CustomEvent.prototype = window.Event.prototype;
+
+			window.CustomEvent = CustomEvent;
+		})();
+
+	</script>
+
+	<style>
+		body{
+			margin: 0;
+			font: 400 14px arial;
+
+			padding-bottom: 180px;
+		}
+
+		*{
+			box-sizing: border-box;
+		}
+
+		.loader {
+			border: 3px solid #cecece;
+			border-top: 3px solid #4c5052;
+			border-radius: 50%;
+			width: 14px;
+			display: inline-block;
+			height: 14px;
+			vertical-align: middle;
+			animation: spin .5s linear infinite;
+			margin-right: 10px;
+		}
+
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+
+		.click{
+			font-weight: bold;
+		}
+
+		.wrap{
+			display: flex;
+		}
+		
+		.wrap > *{
+			margin: 20px;
+		}
+
+		#event-log-wrap{
+			position: fixed;
+			bottom: 30px;
+			left: 50%;
+			width: 90%;
+			margin-left:-45%;
+		}
+
+		#event-log-wrap > span{
+			position: absolute;
+			right: 10px;
+			top: 10px;
+			z-index: 100;
+			font-weight: bold;
+			margin-bottom: 3px;
+			display: block;
+			color: #fff;
+		}
+
+		#eventlog{
+			margin: 0;
+			background: #000;
+			color: #fff;
+			
+			list-style: none;
+			padding: 5px 10px;
+
+			max-height: 150px;
+			overflow: auto;
+
+			border: 4px solid #999;
+			
+		}
+
+		li + li {
+			margin-top: 10px;
+		}
+
+		.simple-buttons button + button,
+		.simple-buttons button + a,
+		.simple-buttons a + a{
+			margin-top: 5px;
+		}
+
+		.simple-buttons button, .simple-buttons a{
+			width: 100%;
+			text-align: left;
+		}
+
+		button, .simple-buttons a{
+			display: block;
+			background: none;
+			border: 2px solid #333;
+			white-space: nowrap;
+			padding: 5px 10px;
+
+			cursor: pointer;
+
+			color: #000;
+
+			text-decoration: none;
+
+			font: 400 12px arial;
+
+			outline: none;
+		}
+
+		button:hover, .simple-buttons a:hover{
+			background: #f2f2f2;
+		}
+
+		h2:first-child{
+			margin-top: 0;
+		}
+
+		.custom-field-test label{
+			display: block;
+			font-weight: bold;
+		}
+		
+		.custom-field-test label > span{
+			width: 100px;
+			display: inline-block;
+		}
+
+		.custom-field-test label + label
+		{
+			margin: 10px 0;
+		}
+
+		header{
+			background: #777;
+			color: #fff;
+			display: flex;
+
+			justify-content: space-between;
+
+			padding: 20px;
+		}
+
+		#valid-test-result,
+		#invalid-test-result{
+			display: none;
+			padding: 10px 20px;
+			background: #5ba05b;
+    		color: #dfd;
+		}
+
+		#invalid-test-result{
+			background: #af5b5b;
+    		color: #ffffff;
+		}
+
+		[valid="true"] #valid-test-result{
+			display: block;
+		}
+
+		[valid="false"] #invalid-test-result{
+			display: block;
+		}
+
+		header button{
+			background: #fff;
+		}
+
+		header button:hover{
+			background: #f2f2f2;
+		}
+
+		h1{
+			margin:0;
+		}
+	</style>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="./../tracking.js"></script>
+	<script src="./../optional_modules/request-listener.js"></script>
+
+	<style>
+		
+	</style>
+</head>
+<body>
+	<div id="wrapper">
+		<button id="xhr-test">XHR request test</button>
+		<button id="fetch-test">Fetch request test</button>
+		<button id="beacon-test">Beacon request test</button>
+	</div>
+	<h1 class="svg">ikasjdioasjd</h1>
+	<script>
+		_stsp.push({
+			event: "XHR_Detected",
+			url_match: /\.svg\?XHR_REQUEST/,
+			track: 'request',
+		})
+
+		_stsp.push({
+			event: "FETCH_Detected",
+			url_match: /\.svg\?FETCH_REQUEST/,
+			track: 'request',
+		})
+
+
+		document.getElementById('xhr-test').addEventListener('click', function(){
+			var xhr = new XMLHttpRequest();
+			xhr.open('GET', 'https://www.sitespect.com/wp-content/uploads/2020/12/SiteSpect_Logo_Color-white-text.svg?XHR_REQUEST', true);
+
+			xhr.onload = function () {
+				console.log('XHR svg response', this)
+			};
+
+			xhr.send(null);
+		})
+
+		document.getElementById('fetch-test').addEventListener('click', function(){
+			fetch('https://www.sitespect.com/wp-content/uploads/2020/12/SiteSpect_Logo_Color-white-text.svg?FETCH_REQUEST')
+			.then(response => response.json())
+			.then(data => console.log(data));
+		})
+	</script>
+</body>
+</html>
