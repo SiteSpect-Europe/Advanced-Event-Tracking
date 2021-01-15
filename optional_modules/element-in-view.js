@@ -7,7 +7,7 @@
  * 
  * Also it's possible to define thresholds for % of element in viewport
 */
-window.SS.Tracking.extendTrack('element_in_view', function(){
+window.SS.Tracking.addModule('element_in_view', function(){
 	var throttleSpeed = 100, // throttled at 10 times a second
 		tracking = [];
 		
