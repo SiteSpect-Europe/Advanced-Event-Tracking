@@ -5,7 +5,7 @@
 const fs = require('fs');
 var UglifyJS = require("uglify-js");
 
-const targetFile = 'dist/tracking.combined.js';
+const targetFile = 'dist/aet.combined.js';
 
 const includedModules = [
 	'element-in-view',

@@ -27,7 +27,7 @@ fs.readdir('./optional_modules', function (err, files) {
 		var path = './optional_modules/'+file;
 		const code = fs.readFileSync(path, 'utf8')
 		var usource = UglifyJS.minify(code);
-		const targetFile = './dist/modules/tracking.module.'+file.replace('.js', '.min.js').replace(/-/gm, '_');
+		const targetFile = './dist/modules/aet.module.'+file.replace('.js', '.min.js').replace(/-/gm, '_');
 		if(usource.error){
 			console.error('Error compiling:', file);
 			console.error(usource.error)

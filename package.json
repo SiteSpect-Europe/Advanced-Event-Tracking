@@ -8,7 +8,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "build": "uglifyjs --compress --mangle --output tracking.ugly.js -- tracking.js && node _/deploy.js dist/tracking.min.js",
+    "build": "uglifyjs --compress --mangle --output tracking.ugly.js -- tracking.js && node _/deploy.js dist/aet.min.js",
     "build-bundled": "node _/deploy_bundled.js",
     "build-modules": "node _/deploy_modules.js",
     "test": "echo \"Error: no test specified\" && exit 1"
