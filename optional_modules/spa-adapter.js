@@ -39,4 +39,4 @@
 
 		['pushState', 'replaceState', 'back', 'go'].forEach(mp)
 	})(window.history); 
-})(window.SS.Tracking)
+})(window.SS.Tracking);

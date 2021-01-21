@@ -78,4 +78,4 @@ window.SS.Tracking.addModule('bubble-fix', function(){
 	return {
 		newEvent: newEvent
 	}
-})
+});

@@ -61,4 +61,4 @@ window.SS.Tracking.addModule('request', function(){
 	return {
 		newEvent: newEvent
 	}
-})
+});

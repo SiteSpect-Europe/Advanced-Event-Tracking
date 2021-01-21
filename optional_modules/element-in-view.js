@@ -107,4 +107,4 @@ window.SS.Tracking.addModule('element_in_view', function(){
 	return {
 		newEvent: newEvent
 	}
-})
+});
