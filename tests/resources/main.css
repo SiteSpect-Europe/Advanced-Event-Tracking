@@ -17,9 +17,10 @@
 .sidebar-col{
 	flex: 15rem 0 0;
 }
-
+#main,
 #sidebar-wrapper {
- min-height: 100vh;
+	height: calc(100vh - 55px);
+	min-height: calc(100vh - 55px);
 }
 #sidebar-wrapper h5{
    padding: 15px 15px 5px;
