@@ -43,22 +43,26 @@ window.SS.Tracking.addModule('element_in_view', function(){
 	function checkEvents(){
 		var remove = []
 		for(var i=0; i<tracking.length; i++){
-			var $el = tracking[i].$el || document.documentElement.querySelector(tracking[i].selector);
-			var elVisible = isVisible($el);
+			var $els = document.documentElement.querySelectorAll(tracking[i].selector);
+			
+			for(var x=0; x<$els.length; x++){
+				var $el = $els[x];
+				var elVisible = isVisible($el);
 
-			if($el && elVisible && tracking[i].visible === false){
-				if(!tracking[i].persistent){
-					remove.push(i)
+				// console.log({$el, elVisible})
+
+				if($el && elVisible && !$el.visible){
+					if(!tracking[i].persistent){
+						remove.push(i)
+					}
+
+					$el.visible = true;
+
+					window.SS.Tracking.evalEventSent(tracking[i], $el, {'event': 'elementInViewport'})
+					$el.times_visible ++;
+				} else if($el && !elVisible && $el.visible === true){
+					$el.visible = false;
 				}
-
-				tracking[i].visible = true;
-
-				window.SS.Tracking.checkEventSend('element_in_view', $el, tracking[i])
-				tracking[i].times_visible ++;
-			} else if ($el && !tracking[i].$el){ // if $el not cached
-				tracking[i].$el = $el; // store $el for future use
-			} else if($el && !elVisible && tracking[i].visible === true){
-				tracking[i].visible = false;
 			}
 		}
 
