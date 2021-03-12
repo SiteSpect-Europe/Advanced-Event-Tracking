@@ -307,6 +307,14 @@ window.SS.Tracking = {
 		}
 		window.SS.Tracking.modules[name] = tracker();
 		this.modules.index.push(name)
+
+		// push existing events to module
+		if(window.SS.Tracking.modules[name]['newEvent']){
+			for(var i=0; i<_stsp.length; i++){
+				var item = _stsp[i];
+				window.SS.Tracking.modules[name].newEvent(item);
+			}
+		}
 	},
 	modulesFn : function(type, event){ // a way to send update to all modules
 		Object.keys(window.SS.Tracking.modules).forEach(function(name){
