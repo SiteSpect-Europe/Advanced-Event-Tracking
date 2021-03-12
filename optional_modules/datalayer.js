@@ -27,7 +27,6 @@ window.SS.Tracking.addModule('datalayer', function(){
 	var tracking = []
 
 	function checkEvents(item){
-		console.log('new item!', item)
 		for(var i=0; i<tracking.length; i++){
 			window.SS.Tracking.evalEventSent(tracking[i], null , item)
 		}
