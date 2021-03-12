@@ -55,14 +55,19 @@
 
 			_stsp.push({
 				event: "FETCH_Detected",
-				url_match: /\.svg\?FETCH_REQUEST/,
+				url_match: /request-test/,
 				track: 'request',
+				callback: function(event, prom){
+					console.log('fetch callback', arguments)
+					if(prom){
+						prom.json().then(res => console.log('got JSON body in callback!', res))
+					}
+				}
 			})
-
 
 			document.getElementById('xhr-test').addEventListener('click', function(){
 				var xhr = new XMLHttpRequest();
-				xhr.open('GET', 'https://www.sitespect.com/wp-content/uploads/2020/12/SiteSpect_Logo_Color-white-text.svg?XHR_REQUEST', true);
+				xhr.open('GET', '/tests/request-test.json', true);
 
 				xhr.onload = function () {
 					console.log('XHR svg response', this)
@@ -72,7 +77,7 @@
 			})
 
 			document.getElementById('fetch-test').addEventListener('click', function(){
-				fetch('https://www.sitespect.com/wp-content/uploads/2020/12/SiteSpect_Logo_Color-white-text.svg?FETCH_REQUEST')
+				fetch('/tests/request-test.json')
 				.then(response => response.json())
 				.then(data => console.log(data));
 			})

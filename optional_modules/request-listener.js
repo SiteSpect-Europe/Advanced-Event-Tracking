@@ -3,6 +3,21 @@
  * We can intercept based on a url match
  * 
  * Patches: XHR, Fetch and BeaconAPI
+ * 
+ * Example usage:
+
+ _stsp.push({
+	event: "FETCH_Detected",
+	url_match: /request-test/,
+	track: 'request',
+	callback: function(event, prom){ // second argument is a clone of the promise.
+		console.log('fetch callback', arguments)
+		if(prom){ 
+			prom.json().then(res => console.log('got JSON body in callback!', res))
+		}
+	}
+})
+
 */
 window.SS.Tracking.addModule('request', function(){
 	var tracking = [],
@@ -27,8 +42,16 @@ window.SS.Tracking.addModule('request', function(){
 		if(window.fetch){
 			var originalFetch = window.fetch;
 			window.fetch = function(url) {
-				checkEventForUrl(url, this)
-				return originalFetch.apply(this, arguments);
+				return originalFetch.apply(this, arguments).then(function(res){
+					try {
+						// send a clone of the promise to event
+						checkEventForUrl(url, res.clone())
+					} catch (error) {
+						console.log('error in fetch monkeypatch', error)
+					}
+			
+					return res
+				});
 			}
 		}
 
