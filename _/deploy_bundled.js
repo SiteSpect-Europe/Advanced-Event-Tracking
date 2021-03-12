@@ -11,7 +11,8 @@ const includedModules = [
 	'element-in-view',
 	'bubble-fix',
 	'request-listener',
-	'spa-adapter'
+	'spa-adapter',
+	'datalayer',
 ]
 
 const files = [
