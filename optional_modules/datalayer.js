@@ -25,6 +25,7 @@ window.SS.Tracking.aet_dl_key = 'datalayer'; // to what key the datalayer is map
 window.SS.Tracking.addModule('datalayer', function(){
 	var dlkey = window.SS.Tracking.aet_dl_key;
 	var tracking = []
+	var dlPatched = false;
 
 	function checkEvents(item){
 		for(var i=0; i<tracking.length; i++){
@@ -39,15 +40,21 @@ window.SS.Tracking.addModule('datalayer', function(){
 			checkEvents(item);
 			return window.origDatalayer.apply(window[dlkey], arguments);
 		};
-		for(var i=0; i<window[dlkey].length; i++){
-			checkEvents(window[dlkey][i])
-		}
+
+		dlPatched = true;
 	}
 
 	function newEvent(event){
 		if(event.track==='datalayer'){
 			tracking.push(event)
-			patchDatalayer()
+
+			if(!dlPatched){
+				patchDatalayer()
+			}
+
+			for(var i=0; i<window[dlkey].length; i++){
+				checkEvents(window[dlkey][i])
+			}
 		}
 	}
 
