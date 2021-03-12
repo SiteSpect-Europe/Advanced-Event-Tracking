@@ -1,0 +1,83 @@
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+	<script src="./../tracking.js"></script>
+	<script src="./../optional_modules/datalayer.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
+	<link rel="stylesheet" href="./resources/main.css">
+
+	<style>
+		body{
+			font-size: 17px;
+		}
+		#wrapper{
+			max-width: 700px;
+			margin: 100px auto;
+		}
+
+		h1{
+			text-align: center;
+			margin-bottom: 40px;
+		}
+		.banner{
+			height: 300px;
+			background-color: #f2f2f2;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin: 30px 0;
+			font-size: 20px;
+		}
+		.topbanner{
+			height: 100px;
+		}
+	</style>
+</head>
+<body>
+	<div id="wrapper">
+		<h1>DataLayer monkeypatch test</h1>
+		<button class="cta">CTA 1</button>
+		<button class="cta">CTA 2</button>
+		<button class="cta" style="border-color:orange;">CTA 3</button>
+	</div>
+	<script>
+		window.datalayer = [
+			{
+				'event': 'UserLoggedOut',
+				'eventCategory': 'UserInfo',
+				'eventValue': 'val'
+			}
+		]
+
+		var _stsp = _stsp || [];
+		// _stsp.push({
+		// 	'selector':'button.btn--primary',
+		// 	'event':'clickOnMainCTA'
+		// });
+		_stsp.push({
+			'event': "DataLayer event",
+			'selector': true,
+			'track': "datalayer",
+			'filter': function($node, item){
+				try {
+					return item.eventCategory === 'banners' && item.eventValue.indexOf('CTA 3') > -1
+				} catch (error) {}
+				return false;
+			}
+		})
+
+		Array.from(document.querySelectorAll('.cta')).forEach(function($node){
+			$node.addEventListener('click', function(e){
+				window.datalayer.push({
+					'event': 'UserInteraction',
+					'eventCategory': 'banners',
+					'eventValue': 'clicked banner :: '+ $node.innerText
+				})
+			})
+		})
+		
+	</script>
+</body>
+</html>
