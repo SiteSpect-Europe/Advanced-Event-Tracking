@@ -5,11 +5,11 @@
 /*                                                                         */
 /* Inject this code right before the </head> using a global variation.     */
 /*                                                                         */
-/*                           Version 1.0.8                                 */
 
 var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
+	version: '%dev_version%',
 	isDebug: function(){ return !!window.SS.Tracking.debug },
 	isPreview: function(){ return !!window.ssp_current_data },
 	eventHandlers : [],

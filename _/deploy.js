@@ -23,7 +23,7 @@ const uglySource = './tracking.ugly.js';
 const usource = fs.readFileSync(uglySource, 'utf8')
 
 const newSource = `${comment}
-${usource}`
+${usource.replace('%dev_version%', packageJson.version)}`
 
 fs.writeFileSync(targetFile, newSource);
 

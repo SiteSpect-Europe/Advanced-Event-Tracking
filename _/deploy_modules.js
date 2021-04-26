@@ -34,7 +34,7 @@ fs.readdir('./optional_modules', function (err, files) {
 			return;
 		}
 		const newSource = `${comment}
-${usource.code}`
+${usource.code.replace('%dev_version%', packageJson.version)}`
 		fs.writeFileSync(targetFile, newSource);
     });
 });

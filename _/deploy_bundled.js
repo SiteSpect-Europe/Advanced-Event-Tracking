@@ -47,7 +47,7 @@ function createCombined(){
 createCombined();
 
 function UglifySource(){
-	var usource = UglifyJS.minify(combinedCode);
+	var usource = UglifyJS.minify(combinedCode.replace('%dev_version%', packageJson.version));
 	if(usource.error){
 		console.error(usource.error)
 		return;
