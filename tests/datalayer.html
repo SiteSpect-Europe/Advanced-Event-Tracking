@@ -3,8 +3,17 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Document</title>
-	<script src="./../tracking.js"></script>
-	<script src="./../optional_modules/datalayer.js"></script>
+	<script>
+		window.dataLayer = [
+			{
+				'event': 'UserLoggedOut',
+				'eventCategory': 'UserInfo',
+				'eventValue': 'val'
+			}
+		]
+	</script>
+	<script src="./../dist/aet.combined.js"></script>
+	<!-- <script src="./../optional_modules/datalayer.js"></script> -->
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 	<link rel="stylesheet" href="./resources/main.css">
 
@@ -42,22 +51,17 @@
 		<button class="cta">CTA 2</button>
 		<button class="cta" style="border-color:orange;">CTA 3</button>
 	</div>
-	<script>
-		window.datalayer = [
-			{
-				'event': 'UserLoggedOut',
-				'eventCategory': 'UserInfo',
-				'eventValue': 'val'
-			}
-		]
-
+	<script>		
 		var _stsp = _stsp || [];
 		// _stsp.push({
 		// 	'selector':'button.btn--primary',
 		// 	'event':'clickOnMainCTA'
 		// });
 		_stsp.push({
-			'event': "DataLayer event",
+			'event': function(){
+				console.log(arguments)
+				return 'nice'
+			},
 			'selector': true,
 			'track': "datalayer",
 			'filter': function($node, item){
@@ -70,7 +74,7 @@
 
 		Array.from(document.querySelectorAll('.cta')).forEach(function($node){
 			$node.addEventListener('click', function(e){
-				window.datalayer.push({
+				window.dataLayer.push({
 					'event': 'UserInteraction',
 					'eventCategory': 'banners',
 					'eventValue': 'clicked banner :: '+ $node.innerText

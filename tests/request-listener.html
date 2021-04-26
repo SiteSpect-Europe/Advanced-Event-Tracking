@@ -47,23 +47,23 @@
 		
 
 		<script>
-			_stsp.push({
-				event: "XHR_Detected",
-				url_match: /\.svg\?XHR_REQUEST/,
-				track: 'request',
-			})
+_stsp.push({
+	event: "XHR_Detected",
+	url_match: /\.svg\?XHR_REQUEST/,
+	track: 'request',
+})
 
-			_stsp.push({
-				event: "FETCH_Detected",
-				url_match: /request-test/,
-				track: 'request',
-				callback: function(event, prom){
-					console.log('fetch callback', arguments)
-					if(prom){
-						prom.json().then(res => console.log('got JSON body in callback!', res))
-					}
-				}
-			})
+_stsp.push({
+	event: "FETCH_Detected",
+	url_match: /request-test/,
+	track: 'request',
+	callback: function(event, prom){
+		console.log('fetch callback', arguments)
+		if(prom){
+			prom.json().then(res => console.log('got JSON body in callback!', res))
+		}
+	}
+})
 
 			document.getElementById('xhr-test').addEventListener('click', function(){
 				var xhr = new XMLHttpRequest();

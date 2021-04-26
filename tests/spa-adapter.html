@@ -39,19 +39,12 @@
 	No test written yet. This module patches History's 'pushState', 'replaceState', 'back' and 'go' method. Should work for modern SPA's.<br><Br>
 	When SPA adapter is included, non-instant events with match / filter will be evaluated every page change.
 	<pre>
-		_stsp.push({
-			'event': 'ReachedContactPage',
-			'match': {
-				'pathName': 'contact'
-			}
-		})
-
-		_stsp.push({
-			'event': 'ReachedContactPage',
-			'filter': function(){
-				return somecondition === true
-			}
-		})
+_stsp.push({
+	'event': 'ReachedContactPage',
+	'match': {
+		'pathName': 'contact'
+	}
+})
 	</pre>
 	</div>
 </body>

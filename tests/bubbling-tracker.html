@@ -85,18 +85,18 @@
 		// 	}
 		// })
 		var _stsp = _stsp || []
-		_stsp.push({
-			'event': "elementhandler",
-			"bubble-fix": true,
-			"track": "submit",
-			'selector': "#propagationPreventedForm",
-			'callback': function(){
-				// console.log('form submit captured!', arguments)
-			},
-			'email': function($form){
-				return $form.querySelector('input').value
-			}
-		})
+_stsp.push({
+	'event': "elementhandler",
+	"bubble-fix": true,
+	"track": "submit",
+	'selector': "#propagationPreventedForm",
+	'callback': function(){
+		// console.log('form submit captured!', arguments)
+	},
+	'email': function($form){
+		return $form.querySelector('input').value
+	}
+})
 
 		_stsp.push({
 			event: "BannerCtaClick",
