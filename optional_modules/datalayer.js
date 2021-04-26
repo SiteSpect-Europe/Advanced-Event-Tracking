@@ -21,7 +21,7 @@ window.SS.Tracking.aet_dl_key = 'yourDLName'
 In the filter function, since there is no related node in the DOM, this is an undefined attribute. 
 Use the second argument to validate the new datalayer entry
 */
-window.SS.Tracking.aet_dl_key = 'datalayer'; // to what key the datalayer is mapped
+window.SS.Tracking.aet_dl_key = 'dataLayer'; // to what key the datalayer is mapped
 window.SS.Tracking.addModule('datalayer', function(){
 	var dlkey = window.SS.Tracking.aet_dl_key;
 	var tracking = []
@@ -29,7 +29,10 @@ window.SS.Tracking.addModule('datalayer', function(){
 
 	function checkEvents(item){
 		for(var i=0; i<tracking.length; i++){
-			window.SS.Tracking.evalEventSent(tracking[i], null , item)
+			var e = tracking[i];
+			e.selector = true;
+			console.log(e)
+			window.SS.Tracking.evalEventSent(e, null , item)
 		}
 	}
 
