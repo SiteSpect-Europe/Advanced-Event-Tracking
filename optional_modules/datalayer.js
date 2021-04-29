@@ -31,7 +31,6 @@ window.SS.Tracking.addModule('datalayer', function(){
 		for(var i=0; i<tracking.length; i++){
 			var e = tracking[i];
 			e.selector = true;
-			console.log(e)
 			window.SS.Tracking.evalEventSent(e, null , item)
 		}
 	}
