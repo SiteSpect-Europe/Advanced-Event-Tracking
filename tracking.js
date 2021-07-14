@@ -10,6 +10,7 @@ var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
 	version: '%dev_version%',
+	asmtCallBack: null,
 	isDebug: function(){ return !!window.SS.Tracking.debug },
 	isPreview: function(){ return !!window.ssp_current_data },
 	eventHandlers : [],
@@ -116,7 +117,8 @@ window.SS.Tracking = {
 					element: element,
 					event: optionalEvent, 
 				}
-			}
+			},
+			countedMetric = !!item.counted_metric
 
 		for(var i =0; i<itemAttrs.length; i++){
 			var attr = itemAttrs[i],
@@ -124,7 +126,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track', 'url_match'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track', 'url_match', 'counted_metric'].indexOf(_key) > -1){
 				continue;
 			}
 
@@ -157,6 +159,24 @@ window.SS.Tracking = {
 				window.SS.Tracking.sendXHR(trackingUrl, attributes);
 			} else {
 				window.SS.Tracking.sendBeacon(trackingUrl);
+			}
+			if(countedMetric && window.SS.Tracking.asmtCallBack){
+				// small timeout for metric to make user counted
+				setTimeout(function(){
+					function reqListener () {
+						try {
+							var asmtData = JSON.parse(this.responseText);
+							window.SS.Tracking.asmtCallBack(asmtData)
+						} catch (error) {
+							
+						}
+					}
+					
+					var oReq = new XMLHttpRequest();
+					oReq.addEventListener("load", reqListener);
+					oReq.open("GET", "/__ssobj/asmt_update");
+					oReq.send();
+				}, 100);
 			}
 		} catch (e) {
 			if (e.number & 1) return false;
