@@ -32,7 +32,7 @@
 		function mp(type){
 			var orig = history[type]; 
 			history[type] = function(state) { 
-				evalEvents()
+				setTimeout(evalEvents, 200)
 				return orig.apply(history, arguments); 
 			} 
 		}
