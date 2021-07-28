@@ -118,7 +118,8 @@ window.SS.Tracking = {
 					event: optionalEvent, 
 				}
 			},
-			countedMetric = !!item.counted_metric
+			countedMetric = !!item.counted_metric,
+			event_id = item.__eat_id;
 
 		for(var i =0; i<itemAttrs.length; i++){
 			var attr = itemAttrs[i],
@@ -126,7 +127,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track', 'url_match', 'counted_metric'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track', 'url_match', 'counted_metric', '__eat_id'].indexOf(_key) > -1){
 				continue;
 			}
 
@@ -151,7 +152,7 @@ window.SS.Tracking = {
 		attributes.sort();
 		
 		var itemEvent = typeof item.event === 'function' ? item.event(element) : item.event;
-		var trackingUrl = '/__ssobj/track?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + Math.floor(Math.random() * 99999999) + '-1';
+		var trackingUrl = '/__ssobj/track?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + event_id;
 	
 		try {
 			if(window.SS.Tracking.isPreview() || window.SS.Tracking.isDebug()){
@@ -202,6 +203,8 @@ window.SS.Tracking = {
 		}).length;
 	},
 	process : function(data){
+		data.__eat_id = Math.floor(Math.random() * 99999999) + '-1';
+
 		if(data.enumerate) {
 			this.enumerate(data.selector);
 		}
