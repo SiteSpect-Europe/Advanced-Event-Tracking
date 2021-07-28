@@ -43,6 +43,9 @@ window.SS.Tracking.addModule('element_in_view', function(){
 	function checkEvents(){
 		var remove = []
 		for(var i=0; i<tracking.length; i++){
+			var event = Object.assign({}, tracking[i]),
+				e_id = event.__eat_id ? event.__eat_id : '',
+				is_visible_key =  e_id+'_is_visible';
 			var $els = document.documentElement.querySelectorAll(tracking[i].selector);
 			
 			for(var x=0; x<$els.length; x++){
@@ -51,17 +54,19 @@ window.SS.Tracking.addModule('element_in_view', function(){
 
 				// console.log({$el, elVisible})
 
-				if($el && elVisible && !$el.visible){
+				if($el && elVisible && !$el[is_visible_key]){
+					tracking[i].times_visible ++;
+
 					if(!tracking[i].persistent){
 						remove.push(i)
+						delete event.times_visible;
 					}
 
-					$el.visible = true;
+					$el[is_visible_key] = true;
 
 					window.SS.Tracking.evalEventSent(tracking[i], $el, {'event': 'elementInViewport'})
-					$el.times_visible ++;
-				} else if($el && !elVisible && $el.visible === true){
-					$el.visible = false;
+				} else if($el && !elVisible && $el[is_visible_key] === true){
+					$el[is_visible_key] = false;
 				}
 			}
 		}

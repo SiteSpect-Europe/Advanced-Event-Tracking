@@ -101,6 +101,18 @@
 				console.log('Banner seen!', arguments)
 			}
 		})
+		_stsp.push({
+			'event': "Banner3Seen",
+			'selector': "#banner3",
+			'track': "element_in_view",
+			'persistent': true,
+			'banner': function($node){
+				return encodeURIComponent($node.innerText);
+			},
+			'callback': function(){
+				console.log('Banner 3 seen!', arguments)
+			}
+		})
 	</script>
 </body>
 </html>
