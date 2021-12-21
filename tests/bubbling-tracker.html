@@ -103,6 +103,13 @@ _stsp.push({
 			selector: ".banner button",
 			"bubble-fix": true
 		})
+
+
+		setInterval(function(){
+			[...document.querySelectorAll('.banner')].forEach($banner => {
+				$banner.querySelector('button').innerHTML = $banner.querySelector('button').innerHTML
+			})
+		}, 300)
 		
 	</script>
 </body>

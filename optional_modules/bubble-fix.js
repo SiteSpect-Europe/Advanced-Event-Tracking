@@ -25,6 +25,7 @@ window.SS.Tracking.addModule('bubble-fix', function(){
 		// console.log('Found node, setting listener', event, $nodeList, eventType)
 
 		$nodeList.forEach(function($node){
+			$node.setAttribute('listenerSet', true)
 			$node.addEventListener(eventType, function(e){
 				window.SS.Tracking.checkEventSend(eventType, $node, e)
 			})
@@ -44,7 +45,6 @@ window.SS.Tracking.addModule('bubble-fix', function(){
 			var selector = (event.selector ? event.selector : event.form) + ':not([listenerSet])'
 			if (document.querySelector(selector)) {
 				setListener(event, document.querySelectorAll(selector))
-				document.querySelector(selector).setAttribute('listenerSet', true)
 			}
 		})
 	}
