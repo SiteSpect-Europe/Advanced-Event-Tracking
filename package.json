@@ -1,6 +1,6 @@
 {
   "name": "advanced-event-tracking",
-  "version": "1.0.18",
+  "version": "1.0.19a",
   "description": "Flexible &amp; Advanced Event Tracking for SiteSpect",
   "main": "tracking.js",
   "dependencies": {
