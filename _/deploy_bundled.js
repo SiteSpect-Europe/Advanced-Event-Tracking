@@ -13,6 +13,7 @@ const includedModules = [
 	'request-listener',
 	'spa-adapter',
 	'datalayer',
+	'media-query'
 ]
 
 const files = [

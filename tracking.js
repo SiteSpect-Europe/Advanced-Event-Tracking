@@ -121,7 +121,7 @@ window.SS.Tracking = {
 			},
 			countedMetric = !!item.counted_metric,
 			event_id = item.__eat_id;
-
+		
 		for(var i =0; i<itemAttrs.length; i++){
 			var attr = itemAttrs[i],
 				_key = attr[0],
@@ -209,7 +209,7 @@ window.SS.Tracking = {
 		if(data.enumerate) {
 			this.enumerate(data.selector);
 		}
-		if(!data.form && !data.selector && (!data.filter || data.filter(data)) && (!data.match || window.SS.Tracking.matcher(data.match))) {
+		if(!data.form && !data.selector && (!data.filter || data.filter(data)) && (data.track !== 'media-query') && (!data.match || window.SS.Tracking.matcher(data.match))) {
 			var rdata = this.send(data,null);
 			if(data.callback) {
 				data.callback(rdata);
@@ -270,6 +270,7 @@ window.SS.Tracking = {
 		}
 	},
 	checkEventSend : function(type, target, originalEvent){
+
 		for(var i=0; i<_stsp.length; i++){
 			var item = _stsp[i];
 
