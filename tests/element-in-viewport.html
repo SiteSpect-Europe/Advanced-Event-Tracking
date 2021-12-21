@@ -55,9 +55,28 @@
 		<p>Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Curabitur blandit tempus porttitor. Nulla vitae elit libero, a pharetra augue. Donec id elit non mi porta gravida at eget metus. Praesent commodo cursus magna, vel scelerisque nisl consectetur et. Curabitur blandit tempus porttitor. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
 		<p>Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Curabitur blandit tempus porttitor.</p>
 		<p>Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus. Etiam porta sem malesuada magna mollis euismod. Maecenas sed diam eget risus varius blandit sit amet non magna. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Morbi leo risus, porta ac consectetur ac, vestibulum at eros. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
-		<div id="banner3" class="banner">
-			Banner #3
+		<div class='scrolling-area'>
+			<div class="spacer"></div>
+			<div id="banner3" class="banner">
+				Banner #3
+			</div>
 		</div>
+		<style>
+			.spacer{
+				width:500px;
+				height: 200px;
+			}
+			#banner3{
+				width: 500px;
+			}
+			.scrolling-area{
+				overflow: auto;
+				white-space: nowrap;
+			}
+			.scrolling-area > div{
+				display: inline-block;
+			}
+		</style>
 		<p>Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Nullam id dolor id nibh ultricies vehicula ut id elit. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.</p>
 		<p>Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor. Etiam porta sem malesuada magna mollis euismod. Cras mattis consectetur purus sit amet fermentum. Nullam id dolor id nibh ultricies vehicula ut id elit. Vivamus sagittis lacus vel augue laoreet rutrum faucibus dolor auctor.</p>
 		<p>Curabitur blandit tempus porttitor. Curabitur blandit tempus porttitor. Maecenas faucibus mollis interdum. Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
@@ -102,15 +121,16 @@
 			}
 		})
 		_stsp.push({
-			'event': "Banner3Seen",
+			'event': "Banner3PartlySeen",
 			'selector': "#banner3",
+			'threshold': 10,
 			'track': "element_in_view",
 			'persistent': true,
 			'banner': function($node){
 				return encodeURIComponent($node.innerText);
 			},
 			'callback': function(){
-				console.log('Banner 3 seen!', arguments)
+				console.log('THRESGIKD !Banner 3 seen!', arguments)
 			}
 		})
 	</script>
