@@ -10,6 +10,7 @@ var _stsp = _stsp || [];
 window.SS = window.SS || {}
 window.SS.Tracking = {
 	version: '%dev_version%',
+	eventTrackUrl: '/__ssobj/track',
 	asmtCallBack: null,
 	isDebug: function(){ return !!window.SS.Tracking.debug },
 	isPreview: function(){ return !!window.ssp_current_data },
@@ -152,7 +153,7 @@ window.SS.Tracking = {
 		attributes.sort();
 		
 		var itemEvent = typeof item.event === 'function' ? item.event(element) : item.event;
-		var trackingUrl = '/__ssobj/track?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + event_id;
+		var trackingUrl = window.SS.Tracking.eventTrackUrl + '?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + event_id;
 	
 		try {
 			if(window.SS.Tracking.isPreview() || window.SS.Tracking.isDebug()){
