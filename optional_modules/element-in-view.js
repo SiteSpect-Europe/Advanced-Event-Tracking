@@ -26,17 +26,39 @@ window.SS.Tracking.addModule('element_in_view', function(){
 		}
 	}
 
-	// https://stackoverflow.com/a/7557433
+	// https://stackoverflow.com/a/20227394
 	function isVisible($el, eventConfig){
 		if(!$el){ return false; }
-		var rect = $el.getBoundingClientRect()
-
-		return (
-			rect.top >= 0 &&
-			rect.left >= 0 &&
-			rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-			rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+		
+		
+		var rect = $el.getBoundingClientRect();
+		var elementArea = (rect.width * rect.height);
+		var docHeight = (window.innerHeight || document.documentElement.clientHeight)
+		var bottomMinus = docHeight - rect.bottom
+		
+		var visibleWidth = (
+			rect.left >= 0 ? rect.width : rect.width + rect.left
 		);
+		if (visibleWidth < 0) {
+			visibleWidth = 0;
+		}
+		
+		var visibleHeight = (
+			rect.top >= 0 ? rect.height - (bottomMinus<=0 ? Math.abs(bottomMinus) : 0) : rect.height + rect.top
+		);
+		if (visibleHeight < 0) {
+			visibleHeight = 0;
+		}
+
+		var visibleArea = visibleWidth * visibleHeight;
+		var visiblePercentage = (visibleArea / elementArea * 100);
+		
+		if(!eventConfig.threshold){
+			return visiblePercentage === 100;
+		} else {
+			// console.log({$el, visiblePercentage})
+			return visiblePercentage >= eventConfig.threshold;
+		}
 	}
 
 	// watch out, needs to be fast af
@@ -50,7 +72,7 @@ window.SS.Tracking.addModule('element_in_view', function(){
 			
 			for(var x=0; x<$els.length; x++){
 				var $el = $els[x];
-				var elVisible = isVisible($el);
+				var elVisible = isVisible($el, event);
 
 				// console.log({$el, elVisible})
 
