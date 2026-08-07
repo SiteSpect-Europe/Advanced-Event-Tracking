@@ -15,7 +15,9 @@ window.SS.Tracking = {
     isDebug: function(){ return !!window.SS.Tracking.debug },
     isPreview: function(){ return !!window.ssp_current_data },
     eventHandlers : [],
-    _debounceTimers: {}, // GLOBAL TIMER STORE
+    _debounceTimers: {}, // GLOBAL DEBOUNCE STORE
+    _throttleTimers: {}, // GLOBAL THROTTLE STORE
+    _rateLimitTimers: {}, // GLOBAL RATE LIMIT STORE
     modules: {
         index: []
     },
@@ -127,7 +129,7 @@ window.SS.Tracking = {
                 _val = attr[1],
                 attrStr = '';
 
-            if(['selector','filter', 'match','event','callback', 'form', 'delay', 'debounce', 'keys', 'track', 'url_match', 'counted_metric', '__eat_id', '_debounceTimers'].indexOf(_key) > -1){
+            if(['selector','filter', 'match','event','callback', 'form', 'delay', 'debounce', 'throttle', 'ratelimit', 'keys', 'track', 'url_match', 'counted_metric', '__eat_id', '_debounceTimers', '_throttleTimers', '_rateLimitTimers'].indexOf(_key) > -1){
                 continue;
             }
 
@@ -206,7 +208,7 @@ window.SS.Tracking = {
             this.enumerate(data.selector);
         }
         if(!data.form && !data.selector && (!data.filter || data.filter(data)) && (data.track !== 'media-query') && (!data.match || window.SS.Tracking.matcher(data.match))) {
-            if(data.debounce || data.delay) {
+            if(data.debounce || data.throttle || data.ratelimit || data.delay) {
                 this.evalEventSent(data, null);
             } else {
                 var rdata = this.send(data,null);
@@ -261,8 +263,12 @@ window.SS.Tracking = {
         };
 
         if((!item.match || window.SS.Tracking.matcher(item.match))){
-            if(typeof item.debounce === 'number' && item.debounce > 0){
-
+            
+            // Generate Key if Debounce, Throttle, or Rate Limit is active
+            if ((typeof item.debounce === 'number' && item.debounce > 0) || 
+                (typeof item.throttle === 'number' && item.throttle > 0) ||
+                (typeof item.ratelimit === 'number' && item.ratelimit > 0)) {
+                
                 var element = (target && item.selector) ? target.closest(item.selector) : target;
 
                 // 1. Base key using event name and selector (if present)
@@ -292,27 +298,52 @@ window.SS.Tracking = {
                 }
 
                 var key = keyParts.join('::');
+            }
 
-                // GLOBAL CANCELLATION: Kill prior pending request for this key
+            // --- RATE LIMIT LOGIC ---
+            if(typeof item.ratelimit === 'number' && item.ratelimit > 0){
+                var now = Date.now();
+                var lastExec = window.SS.Tracking._rateLimitTimers[key] || 0;
+
+                if (now - lastExec < item.ratelimit) {
+                    return; // Ignore event if sent within the rate limit window
+                }
+
+                window.SS.Tracking._rateLimitTimers[key] = now;
+                send(item, target, originalEvent ? originalEvent : false);
+
+            // --- THROTTLE LOGIC ---
+            } else if(typeof item.throttle === 'number' && item.throttle > 0){
+                if (window.SS.Tracking._throttleTimers[key]) {
+                    return; // Ignore event if still in throttle window
+                }
+
+                send(item, target, originalEvent ? originalEvent : false);
+
+                // Set lock timer for throttle period
+                window.SS.Tracking._throttleTimers[key] = setTimeout(function(k){
+                    delete window.SS.Tracking._throttleTimers[k];
+                }, item.throttle, key);
+
+            // --- DEBOUNCE LOGIC ---
+            } else if(typeof item.debounce === 'number' && item.debounce > 0){
                 if(window.SS.Tracking._debounceTimers[key]){
-                    console.log('[SiteSpect Debounce] CANCELLED prior event for key:', key);
                     clearTimeout(window.SS.Tracking._debounceTimers[key]);
                     delete window.SS.Tracking._debounceTimers[key];
                 }
 
-                console.log('[SiteSpect Debounce] SCHEDULING new event for key:', key, '| Wait limit:', item.debounce + 'ms');
-
-                // Schedule execution globally
                 window.SS.Tracking._debounceTimers[key] = setTimeout(function(data){
-                    console.log('[SiteSpect Debounce] EXECUTING payload for key:', data.key);
                     delete window.SS.Tracking._debounceTimers[data.key];
                     send(data.item, data.target, data.evt);
                 }, item.debounce, { item: item, target: target, evt: originalEvent, key: key });
 
+            // --- DELAY LOGIC ---
             } else if(item.delay){
                 setTimeout(function(data){ 
                     send(data.item, data.target, data.evt); 
                 }, item.delay, { item: item, target: target, evt: originalEvent });
+            
+            // --- IMMEDIATE EXECUTION ---
             } else {
                 send(item, target, originalEvent ? originalEvent : false);
             }
