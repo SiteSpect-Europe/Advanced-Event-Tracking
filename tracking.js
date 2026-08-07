@@ -128,7 +128,7 @@ window.SS.Tracking = {
 				_val = attr[1],
 				attrStr = '';
 
-			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'track', 'url_match', 'counted_metric', '__eat_id'].indexOf(_key) > -1){
+			if(['selector','filter', 'match','event','callback', 'form', 'delay', 'debounce', 'track', 'url_match', 'counted_metric', '__eat_id'].indexOf(_key) > -1){
 				continue;
 			}
 
@@ -244,31 +244,47 @@ window.SS.Tracking = {
 	},
 	// used to directly send a event from module
 	evalEventSent: function(item, target, originalEvent){
-		var send = function(item, target){
-			if(!target){ // not DOM related
+        var send = function(item, target){
+            if(!target){ // not DOM related
 
-			} else {
-				var element = target.closest(item.selector);
-				if(!element.getAttribute('stsp-sequence') && item.enumerate) {
-					window.SS.Tracking.enumerate(item.selector);
-				}
-			}
+            } else {
+                var element = target.closest(item.selector);
+                if(!element.getAttribute('stsp-sequence') && item.enumerate) {
+                    window.SS.Tracking.enumerate(item.selector);
+                }
+            }
 
-			if((!item.filter || item.filter(element, originalEvent))) {
-				var rdata = window.SS.Tracking.send(item,element, originalEvent ? originalEvent : false);
-				if(item.callback) {
-					item.callback(rdata, originalEvent);
-				}
-			}
-		}
-		if((!item.match || window.SS.Tracking.matcher(item.match))){
-			if(item.delay){
-				setTimeout(function(data){ send(data.item, data.target, originalEvent ? originalEvent : false) }, item.delay, { item: item, target: target })
-			} else {
-				send(item, target, originalEvent ? originalEvent : false)
-			}
-		}
-	},
+            if((!item.filter || item.filter(element, originalEvent))) {
+                var rdata = window.SS.Tracking.send(item, element, originalEvent ? originalEvent : false);
+                if(item.callback) {
+                    item.callback(rdata, originalEvent);
+                }
+            }
+        };
+
+        if((!item.match || window.SS.Tracking.matcher(item.match))){
+            // 1. Debounce Logic: takes precedence over simple delay
+            if(typeof item.debounce === 'number' && item.debounce > 0){
+                if(item._debounceTimer){
+                    clearTimeout(item._debounceTimer);
+                }
+                item._debounceTimer = setTimeout(function(data){
+                    item._debounceTimer = null;
+                    send(data.item, data.target);
+                }, item.debounce, { item: item, target: target });
+            
+            // 2. Existing Delay Logic (for non-debounced deferred execution)
+            } else if(item.delay){
+                setTimeout(function(data){ 
+                    send(data.item, data.target); 
+                }, item.delay, { item: item, target: target });
+            
+            // 3. Immediate Execution
+            } else {
+                send(item, target, originalEvent ? originalEvent : false);
+            }
+        }
+    },
 	checkEventSend : function(type, target, originalEvent){
 
 		for(var i=0; i<_stsp.length; i++){
