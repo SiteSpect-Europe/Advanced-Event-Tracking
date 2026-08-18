@@ -41,6 +41,21 @@ window.SS.Tracking = {
         }
         return String(a);
     },
+    // Builds a matches()-safe selector list where EACH comma-separated
+    // selector gets its own ", <sel> *" descendant clause, e.g.
+    // ".a, .b" -> ".a, .a *, .b, .b *" instead of the old ".a, .b, .a, .b *"
+    // (which only ever suffixed the last selector in the list).
+    // A selector that already ends in "*" (e.g. ".foo *" or the universal
+    // selector "*") is left as-is — it already matches descendants, so
+    // appending another " *" would be redundant.
+    expandSelector : function(selector){
+        if(!selector) return selector;
+        return selector.split(',').map(function(s){
+            s = s.trim();
+            if(s.charAt(s.length - 1) === '*') return s;
+            return s + ', ' + s + ' *';
+        }).join(', ');
+    },
     sendXHR: function(trackingUrl, attributes){
         var xhr = window.ActiveXObject ? new window.ActiveXObject("Microsoft.XMLHTTP") : new window.XMLHttpRequest;
 
@@ -50,7 +65,7 @@ window.SS.Tracking = {
 
         try {
             xhr.open('GET', trackingUrl);
-            
+
             if(window.SS.Tracking.isPreview()) {
                 xhr.onreadystatechange = function(a,b,c){
                     if(xhr.readyState == xhr.HEADERS_RECEIVED) {
@@ -64,7 +79,7 @@ window.SS.Tracking = {
                                 Object.assign(newmetrics[newid],metrics[id]);
                                 newmetrics[newid].ID=newid;
                                 if(attributes.length)
-                                    newmetrics[newid].Name += '<br/>AET: '+attributes.join(', '); 
+                                    newmetrics[newid].Name += '<br/>AET: '+attributes.join(', ');
                             }
                             data = JSON.stringify(newmetrics);
                             function ssApplyEventTrackMetric(req, obj) {
@@ -86,16 +101,16 @@ window.SS.Tracking = {
                     }
                 }
             }
-        } catch(e) { 
-            return false; 
+        } catch(e) {
+            return false;
         }
         try {
-            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest"),     
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest"),
             xhr.setRequestHeader("Accept", "*/*");
 
             xhr.send(null);
-        } catch(e) { 
-            return false; 
+        } catch(e) {
+            return false;
         }
     },
     sendBeacon: function(trackingUrl){
@@ -117,12 +132,12 @@ window.SS.Tracking = {
                 _event: {
                     stspEvent: item,
                     element: element,
-                    event: optionalEvent, 
+                    event: optionalEvent,
                 }
             },
             countedMetric = !!item.counted_metric,
             event_id = item.__eat_id;
-        
+
         for(var i =0; i<itemAttrs.length; i++){
             var attr = itemAttrs[i],
                 _key = attr[0],
@@ -152,10 +167,10 @@ window.SS.Tracking = {
         }
 
         attributes.sort();
-        
+
         var itemEvent = typeof item.event === 'function' ? item.event(element) : item.event;
         var trackingUrl = window.SS.Tracking.eventTrackUrl + '?event=' + itemEvent + (attributes.length ? '&' + attributes.join('&') : '') + '&x=' + event_id;
-    
+
         try {
             if(window.SS.Tracking.isPreview() || window.SS.Tracking.isDebug()){
                 console.log(trackingUrl);
@@ -171,7 +186,7 @@ window.SS.Tracking = {
                             window.SS.Tracking.asmtCallBack(asmtData)
                         } catch (error) {}
                     }
-                    
+
                     var oReq = new XMLHttpRequest();
                     oReq.addEventListener("load", reqListener);
                     oReq.open("GET", "/__ssobj/asmt_update");
@@ -247,7 +262,7 @@ window.SS.Tracking = {
     evalEventSent: function(item, target, originalEvent){
         var send = function(item, target, evt){
             var element = null;
-            if(target && item.selector){ 
+            if(target && item.selector){
                 element = target.closest(item.selector);
                 if(element && !element.getAttribute('stsp-sequence') && item.enumerate) {
                     window.SS.Tracking.enumerate(item.selector);
@@ -263,12 +278,12 @@ window.SS.Tracking = {
         };
 
         if((!item.match || window.SS.Tracking.matcher(item.match))){
-            
+
             // Generate Key if Debounce, Throttle, or Rate Limit is active
-            if ((typeof item.debounce === 'number' && item.debounce > 0) || 
+            if ((typeof item.debounce === 'number' && item.debounce > 0) ||
                 (typeof item.throttle === 'number' && item.throttle > 0) ||
                 (typeof item.ratelimit === 'number' && item.ratelimit > 0)) {
-                
+
                 var element = (target && item.selector) ? target.closest(item.selector) : target;
 
                 // 1. Base key using event name and selector (if present)
@@ -339,10 +354,10 @@ window.SS.Tracking = {
 
             // --- DELAY LOGIC ---
             } else if(item.delay){
-                setTimeout(function(data){ 
-                    send(data.item, data.target, data.evt); 
+                setTimeout(function(data){
+                    send(data.item, data.target, data.evt);
                 }, item.delay, { item: item, target: target, evt: originalEvent });
-            
+
             // --- IMMEDIATE EXECUTION ---
             } else {
                 send(item, target, originalEvent ? originalEvent : false);
@@ -363,13 +378,24 @@ window.SS.Tracking = {
             }
 
             if(type==='submit'){
-                if(!item.selector && (!item.form || !target.matches(item.form+','+item.selector+' *'))){
+                // FIX: was `target.matches(item.form+','+item.selector+' *')`.
+                // item.selector is not yet assigned at this point (still undefined),
+                // so the old string concat produced "<form>, *" — a ", *" clause
+                // that matches literally any element anywhere, making this check
+                // pass far too often. Route through expandSelector for a single
+                // consistent, correct builder.
+                if(!item.selector && (!item.form || !target.matches(window.SS.Tracking.expandSelector(item.form)))){
                     continue;
                 }
                 item.selector = item.selector ? item.selector : item.form
             }
-            
-            if(!item.selector || !target.matches(item.selector+','+item.selector+' *')){
+
+            // FIX: was `target.matches(item.selector+','+item.selector+' *')`.
+            // For a comma-separated selector list (e.g. ".a, .b") that string
+            // concat only appended " *" to the LAST selector, producing
+            // ".a, .b, .a, .b *" — so descendants of ".a" never matched.
+            // expandSelector() suffixes every selector in the list individually.
+            if(!item.selector || !target.matches(window.SS.Tracking.expandSelector(item.selector))){
                 continue;
             }
 
@@ -427,17 +453,17 @@ window.SS.Tracking = {
 }
 
 if (!Element.prototype.matches) {
-    Element.prototype.matches = 
-    Element.prototype.matchesSelector || 
+    Element.prototype.matches =
+    Element.prototype.matchesSelector ||
     Element.prototype.mozMatchesSelector ||
-    Element.prototype.msMatchesSelector || 
-    Element.prototype.oMatchesSelector || 
+    Element.prototype.msMatchesSelector ||
+    Element.prototype.oMatchesSelector ||
     Element.prototype.webkitMatchesSelector ||
     function(s) {
         var matches = (this.document || this.ownerDocument).querySelectorAll(s),
             i = matches.length;
         while (--i >= 0 && matches.item(i) !== this) {}
-        return i > -1;            
+        return i > -1;
     };
 }
 
@@ -460,7 +486,7 @@ if (!Object.entries) {
             resArray = new Array(i);
         while (i--)
             resArray[i] = [ownProps[i], obj[ownProps[i]]];
-        
+
         return resArray;
     };
 }
@@ -472,13 +498,13 @@ if (typeof Object.assign !== 'function') {
         if (target === null || target === undefined) {
           throw new TypeError('Cannot convert undefined or null to object');
         }
-  
+
         var to = Object(target);
-  
+
         for (var index = 1; index < arguments.length; index++) {
           var nextSource = arguments[index];
-  
-          if (nextSource !== null && nextSource !== undefined) { 
+
+          if (nextSource !== null && nextSource !== undefined) {
             for (var nextKey in nextSource) {
               if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
                 to[nextKey] = nextSource[nextKey];
